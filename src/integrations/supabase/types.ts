@@ -14,7 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pair_stats: {
+        Row: {
+          id: string
+          pair: string
+          profit_loss: number
+          total_trades: number
+          updated_at: string
+          user_id: string
+          win_rate: number
+        }
+        Insert: {
+          id?: string
+          pair: string
+          profit_loss?: number
+          total_trades?: number
+          updated_at?: string
+          user_id: string
+          win_rate?: number
+        }
+        Update: {
+          id?: string
+          pair?: string
+          profit_loss?: number
+          total_trades?: number
+          updated_at?: string
+          user_id?: string
+          win_rate?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      risk_rules: {
+        Row: {
+          created_at: string
+          id: string
+          max_daily_loss: number
+          max_risk_per_trade: number
+          max_weekly_loss: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_daily_loss?: number
+          max_risk_per_trade?: number
+          max_weekly_loss?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_daily_loss?: number
+          max_risk_per_trade?: number
+          max_weekly_loss?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      strategies: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string
+          entry_price: number
+          id: string
+          lot_size: number
+          notes: string | null
+          pair: string
+          pips: number | null
+          profit_loss: number | null
+          result: string | null
+          risk_percent: number | null
+          stop_loss: number | null
+          strategy_id: string | null
+          take_profit: number | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_price: number
+          id?: string
+          lot_size: number
+          notes?: string | null
+          pair: string
+          pips?: number | null
+          profit_loss?: number | null
+          result?: string | null
+          risk_percent?: number | null
+          stop_loss?: number | null
+          strategy_id?: string | null
+          take_profit?: number | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_price?: number
+          id?: string
+          lot_size?: number
+          notes?: string | null
+          pair?: string
+          pips?: number | null
+          profit_loss?: number | null
+          result?: string | null
+          risk_percent?: number | null
+          stop_loss?: number | null
+          strategy_id?: string | null
+          take_profit?: number | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
