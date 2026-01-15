@@ -1,6 +1,11 @@
-import { recentTrades } from "@/data/mockData";
+import { useTrades } from "@/hooks/useTrades";
 
 export function RecentTradesTable() {
+  const { trades } = useTrades();
+  const recentTrades = trades.slice(0, 5);
+
+  if (recentTrades.length === 0) return null;
+
   return (
     <div className="bg-card rounded-xl border border-border overflow-hidden animate-fade-in">
       <div className="p-5 border-b border-border">
@@ -19,29 +24,21 @@ export function RecentTradesTable() {
             </tr>
           </thead>
           <tbody>
-            {recentTrades.slice(0, 5).map((trade) => (
+            {recentTrades.map((trade) => (
               <tr key={trade.id} className="trade-row border-b border-border/50 last:border-0">
-                <td className="px-5 py-4">
-                  <span className="font-mono font-medium text-foreground">{trade.pair}</span>
-                </td>
-                <td className="px-5 py-4">
-                  <span className={trade.type === "Buy" ? "buy-badge" : "sell-badge"}>
-                    {trade.type}
+                <td className="px-5 py-4"><span className="font-mono font-medium text-foreground">{trade.pair}</span></td>
+                <td className="px-5 py-4"><span className={trade.type === "buy" ? "buy-badge" : "sell-badge"}>{trade.type.toUpperCase()}</span></td>
+                <td className="px-5 py-4 text-right">
+                  <span className={`font-mono font-medium ${Number(trade.pips) >= 0 ? "profit-text" : "loss-text"}`}>
+                    {trade.pips !== null ? (Number(trade.pips) >= 0 ? "+" : "") + trade.pips : "-"}
                   </span>
                 </td>
                 <td className="px-5 py-4 text-right">
-                  <span className={`font-mono font-medium ${trade.pips >= 0 ? "profit-text" : "loss-text"}`}>
-                    {trade.pips >= 0 ? "+" : ""}{trade.pips}
+                  <span className={`font-mono font-medium ${Number(trade.profit_loss) >= 0 ? "profit-text" : "loss-text"}`}>
+                    {trade.profit_loss !== null ? (Number(trade.profit_loss) >= 0 ? "+" : "") + "$" + Number(trade.profit_loss).toLocaleString() : "-"}
                   </span>
                 </td>
-                <td className="px-5 py-4 text-right">
-                  <span className={`font-mono font-medium ${trade.profit >= 0 ? "profit-text" : "loss-text"}`}>
-                    {trade.profit >= 0 ? "+" : ""}${trade.profit}
-                  </span>
-                </td>
-                <td className="px-5 py-4">
-                  <span className="text-sm text-muted-foreground">{trade.strategy}</span>
-                </td>
+                <td className="px-5 py-4"><span className="text-sm text-muted-foreground">{trade.strategies?.name ?? "-"}</span></td>
               </tr>
             ))}
           </tbody>
