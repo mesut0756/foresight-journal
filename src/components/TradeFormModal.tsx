@@ -263,12 +263,12 @@ export function TradeFormModal({
             {/* Strategy */}
             <div className="space-y-2">
               <Label htmlFor="edit-strategy">Strategy</Label>
-              <Select value={strategyId} onValueChange={setStrategyId}>
+              <Select value={strategyId || "none"} onValueChange={(v) => setStrategyId(v === "none" ? "" : v)}>
                 <SelectTrigger className="input-field">
                   <SelectValue placeholder="Select strategy" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No Strategy</SelectItem>
+                  <SelectItem value="none">No Strategy</SelectItem>
                   {strategies.map((strategy) => (
                     <SelectItem key={strategy.id} value={strategy.id}>
                       {strategy.name}
