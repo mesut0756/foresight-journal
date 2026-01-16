@@ -45,8 +45,16 @@ export default function AddTrade() {
   const [tags, setTags] = useState<string[]>([]);
   const [pips, setPips] = useState("");
   const [profitLoss, setProfitLoss] = useState("");
-  const [result, setResult] = useState<"win" | "loss" | "breakeven" | "">("");
   const [showClosedTrade, setShowClosedTrade] = useState(false);
+
+  // Auto-calculate result based on P/L
+  const getResult = (): "win" | "loss" | "breakeven" | undefined => {
+    if (!profitLoss) return undefined;
+    const pl = parseFloat(profitLoss);
+    if (pl > 0) return "win";
+    if (pl < 0) return "loss";
+    return "breakeven";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +78,7 @@ export default function AddTrade() {
         tags: tags.length > 0 ? tags : undefined,
         pips: pips ? parseFloat(pips) : undefined,
         profit_loss: profitLoss ? parseFloat(profitLoss) : undefined,
-        result: result || undefined,
+        result: getResult(),
       });
       
       toast.success("Trade added successfully!");
@@ -255,37 +263,6 @@ export default function AddTrade() {
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-4 mt-4 p-4 border border-border rounded-lg bg-secondary/10">
-                {/* Result Selection */}
-                <div className="space-y-2">
-                  <Label>Trade Result</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={result === "win" ? "default" : "outline"}
-                      className={`flex-1 ${result === "win" ? "bg-chart-2 hover:bg-chart-2/90" : ""}`}
-                      onClick={() => setResult("win")}
-                    >
-                      Win
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={result === "loss" ? "default" : "outline"}
-                      className={`flex-1 ${result === "loss" ? "bg-destructive hover:bg-destructive/90" : ""}`}
-                      onClick={() => setResult("loss")}
-                    >
-                      Loss
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={result === "breakeven" ? "default" : "outline"}
-                      className={`flex-1 ${result === "breakeven" ? "bg-muted-foreground hover:bg-muted-foreground/90" : ""}`}
-                      onClick={() => setResult("breakeven")}
-                    >
-                      B/E
-                    </Button>
-                  </div>
-                </div>
-
                 {/* Pips and P/L */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
