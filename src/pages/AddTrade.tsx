@@ -10,11 +10,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { forexPairs, strategyOptions } from "@/data/mockData";
+import { forexPairs } from "@/data/mockData";
 import { useState } from "react";
+import { useTrades } from "@/hooks/useTrades";
+import { useStrategies } from "@/hooks/useStrategies";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function AddTrade() {
+  const navigate = useNavigate();
+  const { createTrade } = useTrades();
+  const isCreating = createTrade.isPending;
+  const { strategies } = useStrategies();
+  
   const [tradeType, setTradeType] = useState<"buy" | "sell">("buy");
+  const [pair, setPair] = useState("");
+  const [entryPrice, setEntryPrice] = useState("");
+  const [stopLoss, setStopLoss] = useState("");
+  const [takeProfit, setTakeProfit] = useState("");
+  const [lotSize, setLotSize] = useState("");
+  const [riskPercent, setRiskPercent] = useState("");
+  const [strategyId, setStrategyId] = useState("");
+  const [notes, setNotes] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!pair || !entryPrice || !lotSize) {
+      toast.error("Please fill in required fields (Pair, Entry Price, Lot Size)");
+      return;
+    }
+
+    try {
+      await createTrade.mutateAsync({
+        pair,
+        type: tradeType,
+        entry_price: parseFloat(entryPrice),
+        stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
+        take_profit: takeProfit ? parseFloat(takeProfit) : undefined,
+        lot_size: parseFloat(lotSize),
+        risk_percent: riskPercent ? parseFloat(riskPercent) : undefined,
+        strategy_id: strategyId || undefined,
+        notes: notes || undefined,
+      });
+      
+      toast.success("Trade added successfully!");
+      navigate("/journal");
+    } catch (error) {
+      toast.error("Failed to add trade");
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -27,18 +72,18 @@ export default function AddTrade() {
 
         {/* Form */}
         <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Pair Selection */}
             <div className="space-y-2">
-              <Label htmlFor="pair">Currency Pair</Label>
-              <Select>
+              <Label htmlFor="pair">Currency Pair *</Label>
+              <Select value={pair} onValueChange={setPair}>
                 <SelectTrigger className="input-field">
                   <SelectValue placeholder="Select pair" />
                 </SelectTrigger>
                 <SelectContent>
-                  {forexPairs.map((pair) => (
-                    <SelectItem key={pair} value={pair}>
-                      {pair}
+                  {forexPairs.map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {p}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -71,13 +116,15 @@ export default function AddTrade() {
             {/* Price Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="entry">Entry Price</Label>
+                <Label htmlFor="entry">Entry Price *</Label>
                 <Input
                   id="entry"
                   type="number"
                   step="0.00001"
                   placeholder="1.08500"
                   className="input-field font-mono"
+                  value={entryPrice}
+                  onChange={(e) => setEntryPrice(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -88,6 +135,8 @@ export default function AddTrade() {
                   step="0.00001"
                   placeholder="1.08200"
                   className="input-field font-mono"
+                  value={stopLoss}
+                  onChange={(e) => setStopLoss(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -98,6 +147,8 @@ export default function AddTrade() {
                   step="0.00001"
                   placeholder="1.09000"
                   className="input-field font-mono"
+                  value={takeProfit}
+                  onChange={(e) => setTakeProfit(e.target.value)}
                 />
               </div>
             </div>
@@ -105,13 +156,15 @@ export default function AddTrade() {
             {/* Lot Size and Risk */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lotSize">Lot Size</Label>
+                <Label htmlFor="lotSize">Lot Size *</Label>
                 <Input
                   id="lotSize"
                   type="number"
                   step="0.01"
                   placeholder="0.10"
                   className="input-field font-mono"
+                  value={lotSize}
+                  onChange={(e) => setLotSize(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
@@ -122,6 +175,8 @@ export default function AddTrade() {
                   step="0.1"
                   placeholder="2.0"
                   className="input-field font-mono"
+                  value={riskPercent}
+                  onChange={(e) => setRiskPercent(e.target.value)}
                 />
               </div>
             </div>
@@ -129,14 +184,14 @@ export default function AddTrade() {
             {/* Strategy */}
             <div className="space-y-2">
               <Label htmlFor="strategy">Strategy</Label>
-              <Select>
+              <Select value={strategyId} onValueChange={setStrategyId}>
                 <SelectTrigger className="input-field">
                   <SelectValue placeholder="Select strategy" />
                 </SelectTrigger>
                 <SelectContent>
-                  {strategyOptions.map((strategy) => (
-                    <SelectItem key={strategy} value={strategy}>
-                      {strategy}
+                  {strategies.map((strategy) => (
+                    <SelectItem key={strategy.id} value={strategy.id}>
+                      {strategy.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -150,12 +205,18 @@ export default function AddTrade() {
                 id="notes"
                 placeholder="Add your trade notes, analysis, or observations..."
                 className="input-field min-h-[120px] resize-none"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
               />
             </div>
 
             {/* Submit Button */}
-            <Button type="button" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6">
-              Add Trade
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold py-6"
+              disabled={isCreating}
+            >
+              {isCreating ? "Adding Trade..." : "Add Trade"}
             </Button>
           </form>
         </div>
