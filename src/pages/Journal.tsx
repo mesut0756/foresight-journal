@@ -19,16 +19,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
 import { forexPairs } from "@/data/mockData";
-import { Edit2, Trash2, Search, Plus } from "lucide-react";
-import { useTrades } from "@/hooks/useTrades";
+import { Edit2, Trash2, Search, Plus, CheckCircle2 } from "lucide-react";
+import { useTrades, Trade } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { EmptyState } from "@/components/EmptyState";
+import { TradeFormModal } from "@/components/TradeFormModal";
 import { Link } from "react-router-dom";
 import { format } from "date-fns";
 
 export default function Journal() {
-  const { trades, isLoading, deleteTrade } = useTrades();
+  const { trades, isLoading, deleteTrade, updateTrade } = useTrades();
   const { strategies } = useStrategies();
   
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +38,7 @@ export default function Journal() {
   const [strategyFilter, setStrategyFilter] = useState("all");
   const [resultFilter, setResultFilter] = useState("all");
   const [deleteTradeId, setDeleteTradeId] = useState<string | null>(null);
+  const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const tradesPerPage = 15;
 
@@ -54,7 +57,8 @@ export default function Journal() {
     const matchesStrategy = strategyFilter === "all" || trade.strategy_id === strategyFilter;
     const matchesResult = resultFilter === "all" || 
       (resultFilter === "win" && trade.result === "win") ||
-      (resultFilter === "loss" && trade.result === "loss");
+      (resultFilter === "loss" && trade.result === "loss") ||
+      (resultFilter === "open" && !trade.result);
     
     return matchesSearch && matchesPair && matchesStrategy && matchesResult;
   });
@@ -70,6 +74,26 @@ export default function Journal() {
     if (deleteTradeId) {
       await deleteTrade.mutateAsync(deleteTradeId);
       setDeleteTradeId(null);
+    }
+  };
+
+  const handleSaveTrade = async (tradeData: Partial<Trade>) => {
+    await updateTrade.mutateAsync(tradeData as Trade & { id: string });
+  };
+
+  const getResultBadge = (result: string | null) => {
+    if (!result) {
+      return <Badge variant="outline" className="text-muted-foreground border-muted-foreground/50">Open</Badge>;
+    }
+    switch (result) {
+      case "win":
+        return <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/50">Win</Badge>;
+      case "loss":
+        return <Badge className="bg-destructive/20 text-destructive border-destructive/50">Loss</Badge>;
+      case "breakeven":
+        return <Badge variant="secondary">B/E</Badge>;
+      default:
+        return null;
     }
   };
 
@@ -167,6 +191,7 @@ export default function Journal() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Results</SelectItem>
+                    <SelectItem value="open">Open Trades</SelectItem>
                     <SelectItem value="win">Wins Only</SelectItem>
                     <SelectItem value="loss">Losses Only</SelectItem>
                   </SelectContent>
@@ -183,6 +208,7 @@ export default function Journal() {
                       <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Date</th>
                       <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Pair</th>
                       <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Type</th>
+                      <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Status</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Pips</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">P/L</th>
                       <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Strategy</th>
@@ -205,22 +231,50 @@ export default function Journal() {
                             {trade.type.charAt(0).toUpperCase() + trade.type.slice(1)}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-right">
-                          <span className={`font-mono font-medium ${(trade.pips ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
-                            {(trade.pips ?? 0) >= 0 ? "+" : ""}{trade.pips ?? 0}
-                          </span>
+                        <td className="px-5 py-4 text-center">
+                          {getResultBadge(trade.result)}
                         </td>
                         <td className="px-5 py-4 text-right">
-                          <span className={`font-mono font-medium ${(trade.profit_loss ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
-                            {(trade.profit_loss ?? 0) >= 0 ? "+" : ""}${trade.profit_loss ?? 0}
-                          </span>
+                          {trade.result ? (
+                            <span className={`font-mono font-medium ${(trade.pips ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
+                              {(trade.pips ?? 0) >= 0 ? "+" : ""}{trade.pips ?? 0}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          {trade.result ? (
+                            <span className={`font-mono font-medium ${(trade.profit_loss ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
+                              {(trade.profit_loss ?? 0) >= 0 ? "+" : ""}${trade.profit_loss ?? 0}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
                         </td>
                         <td className="px-5 py-4">
                           <span className="text-sm text-muted-foreground">{getStrategyName(trade.strategy_id)}</span>
                         </td>
                         <td className="px-5 py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 hover:text-primary">
+                          <div className="flex items-center justify-center gap-1">
+                            {!trade.result && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 hover:bg-chart-2/10 hover:text-chart-2"
+                                onClick={() => setEditingTrade(trade)}
+                                title="Close Trade"
+                              >
+                                <CheckCircle2 className="w-4 h-4" />
+                              </Button>
+                            )}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                              onClick={() => setEditingTrade(trade)}
+                              title="Edit Trade"
+                            >
                               <Edit2 className="w-4 h-4" />
                             </Button>
                             <Button 
@@ -228,6 +282,7 @@ export default function Journal() {
                               size="icon" 
                               className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
                               onClick={() => setDeleteTradeId(trade.id)}
+                              title="Delete Trade"
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -267,6 +322,15 @@ export default function Journal() {
           </>
         )}
       </div>
+
+      {/* Edit/Close Trade Modal */}
+      <TradeFormModal
+        open={!!editingTrade}
+        onOpenChange={(open) => !open && setEditingTrade(null)}
+        trade={editingTrade}
+        onSave={handleSaveTrade}
+        isLoading={updateTrade.isPending}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteTradeId} onOpenChange={() => setDeleteTradeId(null)}>
