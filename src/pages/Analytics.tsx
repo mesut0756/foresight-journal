@@ -13,6 +13,7 @@ import {
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useTrades } from "@/hooks/useTrades";
 import { EmptyState } from "@/components/EmptyState";
+import { MonthlyCalendar } from "@/components/analytics/MonthlyCalendar";
 import { BarChart3 } from "lucide-react";
 
 export default function Analytics() {
@@ -83,6 +84,9 @@ export default function Analytics() {
           <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
           <p className="text-muted-foreground mt-1">Deep dive into your trading performance</p>
         </div>
+
+        {/* Monthly Calendar - Full width */}
+        <MonthlyCalendar />
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">

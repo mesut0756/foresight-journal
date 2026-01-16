@@ -13,17 +13,23 @@ import {
 import { forexPairs } from "@/data/mockData";
 import { Settings as SettingsIcon, Percent, DollarSign, Sun, Moon, Bell, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/components/ThemeProvider";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Settings() {
   const { signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
     navigate("/auth");
+  };
+
+  const handleThemeToggle = (checked: boolean) => {
+    setTheme(checked ? "dark" : "light");
   };
 
   return (
@@ -124,7 +130,10 @@ export default function Settings() {
                   <p className="text-sm text-muted-foreground">Use dark theme</p>
                 </div>
               </div>
-              <Switch defaultChecked />
+              <Switch 
+                checked={theme === "dark"} 
+                onCheckedChange={handleThemeToggle}
+              />
             </div>
 
             <div className="flex items-center justify-between">
