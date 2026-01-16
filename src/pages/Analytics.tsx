@@ -9,6 +9,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useTrades } from "@/hooks/useTrades";
@@ -20,29 +21,31 @@ export default function Analytics() {
   const { pairPerformance, monthlyPerformance, isLoading } = useDashboardStats();
   const { trades } = useTrades();
 
-  // Calculate win rate trend from trades
+  // Calculate win rate trend from trades - all 12 months
   const calculateWinRateTrend = () => {
-    if (trades.length === 0) return [];
-    
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyData: Record<string, { wins: number; total: number }> = {};
+    
+    // Initialize all 12 months
+    monthNames.forEach(month => {
+      monthlyData[month] = { wins: 0, total: 0 };
+    });
     
     trades.forEach(trade => {
       const date = new Date(trade.created_at);
       const monthKey = date.toLocaleString('default', { month: 'short' });
       
-      if (!monthlyData[monthKey]) {
-        monthlyData[monthKey] = { wins: 0, total: 0 };
-      }
-      
-      monthlyData[monthKey].total++;
-      if (trade.result === 'win') {
-        monthlyData[monthKey].wins++;
+      if (monthlyData[monthKey]) {
+        monthlyData[monthKey].total++;
+        if (trade.result === 'win') {
+          monthlyData[monthKey].wins++;
+        }
       }
     });
 
-    return Object.entries(monthlyData).map(([month, data]) => ({
+    return monthNames.map(month => ({
       month,
-      winRate: data.total > 0 ? Math.round((data.wins / data.total) * 100) : 0,
+      winRate: monthlyData[month].total > 0 ? Math.round((monthlyData[month].wins / monthlyData[month].total) * 100) : 0,
     }));
   };
 
@@ -96,7 +99,7 @@ export default function Analytics() {
               <h3 className="text-lg font-semibold text-foreground">Performance by Pair</h3>
               <p className="text-sm text-muted-foreground mt-1">Profit/Loss by currency pair</p>
             </div>
-            <div className="h-[300px]">
+            <div className="h-[220px]">
               {pairPerformance.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={pairPerformance} layout="vertical">
@@ -128,9 +131,15 @@ export default function Analytics() {
                     />
                     <Bar 
                       dataKey="profit" 
-                      fill="hsl(var(--primary))"
                       radius={[0, 4, 4, 0]}
-                    />
+                    >
+                      {pairPerformance.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`}
+                          fill={entry.profit >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -179,9 +188,15 @@ export default function Analytics() {
                     />
                     <Bar 
                       dataKey="profit" 
-                      fill="hsl(var(--primary))"
                       radius={[4, 4, 0, 0]}
-                    />
+                    >
+                      {monthlyPerformance.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`}
+                          fill={entry.profit >= 0 ? "hsl(var(--primary))" : "hsl(var(--destructive))"}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
