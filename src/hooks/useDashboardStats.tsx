@@ -176,11 +176,11 @@ export function useDashboardStats() {
       
       const monthMap = new Map<string, { profit: number; trades: number }>();
       
-      // Initialize last 6 months
-      for (let i = 5; i >= 0; i--) {
-        const month = format(subMonths(new Date(), i), 'MMM');
+      // Initialize all 12 months of the current year
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      monthNames.forEach(month => {
         monthMap.set(month, { profit: 0, trades: 0 });
-      }
+      });
       
       trades.forEach(trade => {
         const month = format(new Date(trade.created_at), 'MMM');
