@@ -119,6 +119,44 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_screenshots: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string
+          screenshot_type: string
+          trade_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url: string
+          screenshot_type: string
+          trade_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          screenshot_type?: string
+          trade_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_screenshots_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trades: {
         Row: {
           created_at: string
@@ -133,6 +171,7 @@ export type Database = {
           risk_percent: number | null
           stop_loss: number | null
           strategy_id: string | null
+          tags: string[] | null
           take_profit: number | null
           type: string
           user_id: string
@@ -150,6 +189,7 @@ export type Database = {
           risk_percent?: number | null
           stop_loss?: number | null
           strategy_id?: string | null
+          tags?: string[] | null
           take_profit?: number | null
           type: string
           user_id: string
@@ -167,6 +207,7 @@ export type Database = {
           risk_percent?: number | null
           stop_loss?: number | null
           strategy_id?: string | null
+          tags?: string[] | null
           take_profit?: number | null
           type?: string
           user_id?: string

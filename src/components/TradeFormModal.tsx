@@ -21,6 +21,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { forexPairs } from "@/data/mockData";
 import { Trade } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
+import { TagInput } from "@/components/TagInput";
+import { TradeScreenshots } from "@/components/TradeScreenshots";
+
+// Common tag suggestions
+const TAG_SUGGESTIONS = [
+  "breakout", "reversal", "trend", "range", "news", "scalp", "swing",
+  "asian session", "london session", "ny session", "high impact", "fomo",
+  "revenge trade", "patience", "confluence", "support", "resistance"
+];
 
 interface TradeFormModalProps {
   open: boolean;
@@ -38,7 +47,7 @@ export function TradeFormModal({
   isLoading = false,
 }: TradeFormModalProps) {
   const { strategies } = useStrategies();
-  const [activeTab, setActiveTab] = useState<"details" | "close">("details");
+  const [activeTab, setActiveTab] = useState<"details" | "close" | "screenshots">("details");
 
   // Edit fields
   const [pair, setPair] = useState("");
@@ -50,6 +59,7 @@ export function TradeFormModal({
   const [riskPercent, setRiskPercent] = useState("");
   const [strategyId, setStrategyId] = useState("");
   const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
 
   // Close trade fields
   const [pips, setPips] = useState("");
@@ -68,6 +78,7 @@ export function TradeFormModal({
       setRiskPercent(trade.risk_percent?.toString() || "");
       setStrategyId(trade.strategy_id || "");
       setNotes(trade.notes || "");
+      setTags(trade.tags || []);
       setPips(trade.pips?.toString() || "");
       setProfitLoss(trade.profit_loss?.toString() || "");
       setResult(trade.result || "");
@@ -98,6 +109,7 @@ export function TradeFormModal({
       risk_percent: riskPercent ? parseFloat(riskPercent) : null,
       strategy_id: strategyId || null,
       notes: notes || null,
+      tags: tags.length > 0 ? tags : null,
     });
     onOpenChange(false);
   };
@@ -136,10 +148,11 @@ export function TradeFormModal({
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "details" | "close")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="details">Trade Details</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "details" | "close" | "screenshots")}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="close">Close Trade</TabsTrigger>
+            <TabsTrigger value="screenshots">Screenshots</TabsTrigger>
           </TabsList>
 
           {/* Trade Details Tab */}
@@ -265,6 +278,17 @@ export function TradeFormModal({
               </Select>
             </div>
 
+            {/* Tags */}
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <TagInput 
+                tags={tags} 
+                onChange={setTags} 
+                placeholder="Add tags (press Enter)"
+                suggestions={TAG_SUGGESTIONS}
+              />
+            </div>
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="edit-notes">Notes</Label>
@@ -367,6 +391,11 @@ export function TradeFormModal({
             >
               {isLoading ? "Saving..." : trade?.result ? "Update Result" : "Close Trade"}
             </Button>
+          </TabsContent>
+
+          {/* Screenshots Tab */}
+          <TabsContent value="screenshots" className="mt-4">
+            {trade && <TradeScreenshots tradeId={trade.id} />}
           </TabsContent>
         </Tabs>
       </DialogContent>
