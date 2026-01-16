@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -12,8 +11,11 @@ import {
   TrendingUp,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 const tradingLinks = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -39,6 +41,26 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+    navigate("/auth");
+  };
+
+  // Get first letter of username from email
+  const getUserInitial = () => {
+    if (!user?.email) return "T";
+    const username = user.email.split("@")[0];
+    return username.charAt(0).toUpperCase();
+  };
+
+  const getUsername = () => {
+    if (!user?.email) return "Trader";
+    return user.email.split("@")[0];
+  };
 
   const NavItem = ({ to, label, icon: Icon }: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) => {
     const isActive = location.pathname === to;
@@ -145,12 +167,21 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         <div className="p-4 border-t border-sidebar-border">
           <div className="flex items-center gap-3 px-4 py-2">
             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-              <span className="text-sm font-medium text-primary">T</span>
+              <span className="text-sm font-medium text-primary">{getUserInitial()}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">Trader</p>
+              <p className="text-sm font-medium text-foreground truncate">{getUsername()}</p>
               <p className="text-xs text-muted-foreground">Pro Account</p>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+              onClick={handleSignOut}
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
       </aside>
