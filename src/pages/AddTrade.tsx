@@ -10,12 +10,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { forexPairs } from "@/data/mockData";
 import { useState } from "react";
 import { useTrades } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { TagInput } from "@/components/TagInput";
+import { ChevronDown } from "lucide-react";
+
+// Common tag suggestions
+const TAG_SUGGESTIONS = [
+  "breakout", "reversal", "trend", "range", "news", "scalp", "swing",
+  "asian session", "london session", "ny session", "high impact", "fomo",
+  "revenge trade", "patience", "confluence", "support", "resistance"
+];
 
 export default function AddTrade() {
   const navigate = useNavigate();
@@ -32,6 +42,11 @@ export default function AddTrade() {
   const [riskPercent, setRiskPercent] = useState("");
   const [strategyId, setStrategyId] = useState("");
   const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [pips, setPips] = useState("");
+  const [profitLoss, setProfitLoss] = useState("");
+  const [result, setResult] = useState<"win" | "loss" | "breakeven" | "">("");
+  const [showClosedTrade, setShowClosedTrade] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +67,10 @@ export default function AddTrade() {
         risk_percent: riskPercent ? parseFloat(riskPercent) : undefined,
         strategy_id: strategyId || undefined,
         notes: notes || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+        pips: pips ? parseFloat(pips) : undefined,
+        profit_loss: profitLoss ? parseFloat(profitLoss) : undefined,
+        result: result || undefined,
       });
       
       toast.success("Trade added successfully!");
@@ -198,17 +217,104 @@ export default function AddTrade() {
               </Select>
             </div>
 
+            {/* Tags */}
+            <div className="space-y-2">
+              <Label>Tags</Label>
+              <TagInput 
+                tags={tags} 
+                onChange={setTags} 
+                placeholder="Add tags (press Enter)"
+                suggestions={TAG_SUGGESTIONS}
+              />
+            </div>
+
             {/* Notes */}
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
                 placeholder="Add your trade notes, analysis, or observations..."
-                className="input-field min-h-[120px] resize-none"
+                className="input-field min-h-[100px] resize-none"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
+
+            {/* Closed Trade Section (Collapsible) */}
+            <Collapsible open={showClosedTrade} onOpenChange={setShowClosedTrade}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full flex items-center justify-between p-3 border border-border rounded-lg hover:bg-secondary/30"
+                >
+                  <span className="text-sm font-medium text-muted-foreground">
+                    Add as closed trade (optional)
+                  </span>
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showClosedTrade ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 mt-4 p-4 border border-border rounded-lg bg-secondary/10">
+                {/* Result Selection */}
+                <div className="space-y-2">
+                  <Label>Trade Result</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={result === "win" ? "default" : "outline"}
+                      className={`flex-1 ${result === "win" ? "bg-chart-2 hover:bg-chart-2/90" : ""}`}
+                      onClick={() => setResult("win")}
+                    >
+                      Win
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={result === "loss" ? "default" : "outline"}
+                      className={`flex-1 ${result === "loss" ? "bg-destructive hover:bg-destructive/90" : ""}`}
+                      onClick={() => setResult("loss")}
+                    >
+                      Loss
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={result === "breakeven" ? "default" : "outline"}
+                      className={`flex-1 ${result === "breakeven" ? "bg-muted-foreground hover:bg-muted-foreground/90" : ""}`}
+                      onClick={() => setResult("breakeven")}
+                    >
+                      B/E
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Pips and P/L */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pips">Pips</Label>
+                    <Input
+                      id="pips"
+                      type="number"
+                      step="0.1"
+                      placeholder="e.g. 25 or -15"
+                      className="input-field font-mono"
+                      value={pips}
+                      onChange={(e) => setPips(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="pl">Profit/Loss ($)</Label>
+                    <Input
+                      id="pl"
+                      type="number"
+                      step="0.01"
+                      placeholder="e.g. 150 or -75"
+                      className="input-field font-mono"
+                      value={profitLoss}
+                      onChange={(e) => setProfitLoss(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Submit Button */}
             <Button 

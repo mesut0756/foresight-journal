@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { forexPairs } from "@/data/mockData";
-import { Edit2, Trash2, Search, Plus, CheckCircle2 } from "lucide-react";
+import { Edit2, Trash2, Search, Plus, CheckCircle2, Tag } from "lucide-react";
 import { useTrades, Trade } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { EmptyState } from "@/components/EmptyState";
@@ -37,10 +37,20 @@ export default function Journal() {
   const [pairFilter, setPairFilter] = useState("all");
   const [strategyFilter, setStrategyFilter] = useState("all");
   const [resultFilter, setResultFilter] = useState("all");
+  const [tagFilter, setTagFilter] = useState("all");
   const [deleteTradeId, setDeleteTradeId] = useState<string | null>(null);
   const [editingTrade, setEditingTrade] = useState<Trade | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const tradesPerPage = 15;
+
+  // Get all unique tags from trades
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    trades.forEach(trade => {
+      trade.tags?.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [trades]);
 
   // Get strategy name by ID
   const getStrategyName = (strategyId: string | null) => {
@@ -52,15 +62,17 @@ export default function Journal() {
   // Filter trades
   const filteredTrades = trades.filter(trade => {
     const matchesSearch = trade.pair.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      trade.notes?.toLowerCase().includes(searchQuery.toLowerCase());
+      trade.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trade.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesPair = pairFilter === "all" || trade.pair === pairFilter;
     const matchesStrategy = strategyFilter === "all" || trade.strategy_id === strategyFilter;
     const matchesResult = resultFilter === "all" || 
       (resultFilter === "win" && trade.result === "win") ||
       (resultFilter === "loss" && trade.result === "loss") ||
       (resultFilter === "open" && !trade.result);
+    const matchesTag = tagFilter === "all" || trade.tags?.includes(tagFilter);
     
-    return matchesSearch && matchesPair && matchesStrategy && matchesResult;
+    return matchesSearch && matchesPair && matchesStrategy && matchesResult && matchesTag;
   });
 
   // Pagination
@@ -95,6 +107,20 @@ export default function Journal() {
       default:
         return null;
     }
+  };
+
+  const tagColors = [
+    "bg-primary/20 text-primary border-primary/50",
+    "bg-chart-1/20 text-chart-1 border-chart-1/50",
+    "bg-chart-2/20 text-chart-2 border-chart-2/50",
+    "bg-chart-3/20 text-chart-3 border-chart-3/50",
+    "bg-chart-4/20 text-chart-4 border-chart-4/50",
+    "bg-chart-5/20 text-chart-5 border-chart-5/50",
+  ];
+
+  const getTagColor = (tag: string) => {
+    const index = tag.charCodeAt(0) % tagColors.length;
+    return tagColors[index];
   };
 
   if (isLoading) {
@@ -147,7 +173,7 @@ export default function Journal() {
                 <div className="relative flex-1 min-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search trades..."
+                    placeholder="Search trades, notes, tags..."
                     className="input-field pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -196,6 +222,24 @@ export default function Journal() {
                     <SelectItem value="loss">Losses Only</SelectItem>
                   </SelectContent>
                 </Select>
+
+                {/* Tag Filter */}
+                {allTags.length > 0 && (
+                  <Select value={tagFilter} onValueChange={setTagFilter}>
+                    <SelectTrigger className="input-field w-[140px]">
+                      <Tag className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="All Tags" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Tags</SelectItem>
+                      {allTags.map((tag) => (
+                        <SelectItem key={tag} value={tag}>
+                          {tag}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
             </div>
 
@@ -211,7 +255,7 @@ export default function Journal() {
                       <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Status</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Pips</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">P/L</th>
-                      <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Strategy</th>
+                      <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Tags</th>
                       <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -253,7 +297,29 @@ export default function Journal() {
                           )}
                         </td>
                         <td className="px-5 py-4">
-                          <span className="text-sm text-muted-foreground">{getStrategyName(trade.strategy_id)}</span>
+                          <div className="flex flex-wrap gap-1 max-w-[150px]">
+                            {trade.tags && trade.tags.length > 0 ? (
+                              <>
+                                {trade.tags.slice(0, 2).map((tag) => (
+                                  <Badge
+                                    key={tag}
+                                    variant="outline"
+                                    className={`${getTagColor(tag)} text-xs py-0 px-1.5 cursor-pointer`}
+                                    onClick={() => setTagFilter(tag)}
+                                  >
+                                    {tag}
+                                  </Badge>
+                                ))}
+                                {trade.tags.length > 2 && (
+                                  <Badge variant="outline" className="text-xs py-0 px-1.5 text-muted-foreground">
+                                    +{trade.tags.length - 2}
+                                  </Badge>
+                                )}
+                              </>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-center gap-1">

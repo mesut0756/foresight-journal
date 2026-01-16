@@ -18,6 +18,7 @@ export interface Trade {
   result: 'win' | 'loss' | 'breakeven' | null;
   strategy_id: string | null;
   notes: string | null;
+  tags: string[] | null;
   created_at: string;
   strategies?: { name: string } | null;
 }
@@ -35,6 +36,7 @@ export interface CreateTradeInput {
   result?: 'win' | 'loss' | 'breakeven' | null;
   strategy_id?: string | null;
   notes?: string | null;
+  tags?: string[] | null;
 }
 
 export function useTrades() {
