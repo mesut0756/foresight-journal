@@ -70,8 +70,8 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Charts Row - Hidden on mobile */}
+            <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-5">
               <div className="lg:col-span-2">
                 <EquityChart />
               </div>

@@ -115,13 +115,16 @@ export function TradeFormModal({
   };
 
   const handleCloseTrade = async () => {
-    if (!trade || !result) return;
+    if (!trade || !profitLoss) return;
+
+    const pl = parseFloat(profitLoss);
+    const calculatedResult = pl > 0 ? "win" : pl < 0 ? "loss" : "breakeven";
 
     await onSave({
       id: trade.id,
       pips: pips ? parseFloat(pips) : null,
-      profit_loss: profitLoss ? parseFloat(profitLoss) : null,
-      result: result as "win" | "loss" | "breakeven",
+      profit_loss: pl,
+      result: calculatedResult,
     });
     onOpenChange(false);
   };
@@ -325,36 +328,18 @@ export function TradeFormModal({
               </div>
             </div>
 
-            {/* Result Selection */}
-            <div className="space-y-2">
-              <Label>Trade Result</Label>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant={result === "win" ? "default" : "outline"}
-                  className={`flex-1 ${result === "win" ? "bg-chart-2 hover:bg-chart-2/90" : ""}`}
-                  onClick={() => setResult("win")}
-                >
-                  Win
-                </Button>
-                <Button
-                  type="button"
-                  variant={result === "loss" ? "default" : "outline"}
-                  className={`flex-1 ${result === "loss" ? "bg-destructive hover:bg-destructive/90" : ""}`}
-                  onClick={() => setResult("loss")}
-                >
-                  Loss
-                </Button>
-                <Button
-                  type="button"
-                  variant={result === "breakeven" ? "default" : "outline"}
-                  className={`flex-1 ${result === "breakeven" ? "bg-muted-foreground hover:bg-muted-foreground/90" : ""}`}
-                  onClick={() => setResult("breakeven")}
-                >
-                  B/E
-                </Button>
+            {/* Auto-calculated Result Display */}
+            {profitLoss && (
+              <div className="p-3 rounded-lg border border-border bg-secondary/20">
+                <p className="text-sm text-muted-foreground mb-1">Result (auto-calculated)</p>
+                <span className={`text-lg font-semibold ${
+                  result === "win" ? "text-primary" : 
+                  result === "loss" ? "text-destructive" : "text-muted-foreground"
+                }`}>
+                  {result === "win" ? "Win" : result === "loss" ? "Loss" : "Breakeven"}
+                </span>
               </div>
-            </div>
+            )}
 
             {/* Pips and P/L */}
             <div className="grid grid-cols-2 gap-3">
@@ -386,7 +371,7 @@ export function TradeFormModal({
 
             <Button
               onClick={handleCloseTrade}
-              disabled={isLoading || !result}
+              disabled={isLoading || !profitLoss}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {isLoading ? "Saving..." : trade?.result ? "Update Result" : "Close Trade"}
