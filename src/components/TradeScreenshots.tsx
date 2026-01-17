@@ -81,30 +81,30 @@ export function TradeScreenshots({ tradeId }: TradeScreenshotsProps) {
 
   const ScreenshotCard = ({ screenshot }: { screenshot: TradeScreenshot }) => (
     <div 
-      className="relative group cursor-pointer rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-colors"
+      className="relative group cursor-pointer rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors"
       onClick={() => handleView(screenshot)}
     >
       <img 
         src={screenshot.image_url} 
         alt={screenshot.description || `${screenshot.screenshot_type} screenshot`}
-        className="w-full h-24 object-cover"
+        className="w-full h-48 object-cover"
       />
       <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <span className="text-xs text-foreground font-medium">View</span>
+        <span className="text-sm text-foreground font-medium">Click to View</span>
       </div>
       {screenshot.description && (
-        <div className="absolute bottom-0 left-0 right-0 bg-background/90 px-2 py-1">
-          <p className="text-xs text-muted-foreground truncate">{screenshot.description}</p>
+        <div className="absolute bottom-0 left-0 right-0 bg-background/90 px-3 py-2">
+          <p className="text-sm text-muted-foreground truncate">{screenshot.description}</p>
         </div>
       )}
     </div>
   );
 
   const UploadButton = ({ type, label }: { type: 'before' | 'after'; label: string }) => (
-    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-secondary/30 transition-colors">
-      <div className="flex flex-col items-center justify-center pt-3 pb-3">
-        <Upload className="w-5 h-5 text-muted-foreground mb-1" />
-        <span className="text-xs text-muted-foreground">{label}</span>
+    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-secondary/30 transition-colors">
+      <div className="flex flex-col items-center justify-center">
+        <Upload className="w-8 h-8 text-muted-foreground mb-2" />
+        <span className="text-sm text-muted-foreground font-medium">{label}</span>
       </div>
       <input
         ref={type === 'before' ? fileInputRef : undefined}
@@ -127,30 +127,30 @@ export function TradeScreenshots({ tradeId }: TradeScreenshotsProps) {
   return (
     <div className="space-y-4">
       {/* Before Trade Screenshots */}
-      <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <Camera className="w-4 h-4" />
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-base">
+          <Camera className="w-5 h-5" />
           Before Trade
         </Label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {beforeScreenshots.map((screenshot) => (
             <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
           ))}
-          <UploadButton type="before" label="Add Before" />
+          <UploadButton type="before" label="Add Before Screenshot" />
         </div>
       </div>
 
       {/* After Trade Screenshots */}
-      <div className="space-y-2">
-        <Label className="flex items-center gap-2">
-          <ImageIcon className="w-4 h-4" />
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-base">
+          <ImageIcon className="w-5 h-5" />
           After Trade (Result)
         </Label>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {afterScreenshots.map((screenshot) => (
             <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
           ))}
-          <UploadButton type="after" label="Add After" />
+          <UploadButton type="after" label="Add After Screenshot" />
         </div>
       </div>
 

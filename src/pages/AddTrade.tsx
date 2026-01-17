@@ -17,15 +17,7 @@ import { useTrades } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { TagInput } from "@/components/TagInput";
 import { ChevronDown } from "lucide-react";
-
-// Common tag suggestions
-const TAG_SUGGESTIONS = [
-  "breakout", "reversal", "trend", "range", "news", "scalp", "swing",
-  "asian session", "london session", "ny session", "high impact", "fomo",
-  "revenge trade", "patience", "confluence", "support", "resistance"
-];
 
 export default function AddTrade() {
   const navigate = useNavigate();
@@ -42,7 +34,6 @@ export default function AddTrade() {
   const [riskPercent, setRiskPercent] = useState("");
   const [strategyId, setStrategyId] = useState("");
   const [notes, setNotes] = useState("");
-  const [tags, setTags] = useState<string[]>([]);
   const [pips, setPips] = useState("");
   const [profitLoss, setProfitLoss] = useState("");
   const [showClosedTrade, setShowClosedTrade] = useState(false);
@@ -75,7 +66,7 @@ export default function AddTrade() {
         risk_percent: riskPercent ? parseFloat(riskPercent) : undefined,
         strategy_id: strategyId || undefined,
         notes: notes || undefined,
-        tags: tags.length > 0 ? tags : undefined,
+        tags: undefined,
         pips: pips ? parseFloat(pips) : undefined,
         profit_loss: profitLoss ? parseFloat(profitLoss) : undefined,
         result: getResult(),
@@ -223,17 +214,6 @@ export default function AddTrade() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            {/* Tags */}
-            <div className="space-y-2">
-              <Label>Tags</Label>
-              <TagInput 
-                tags={tags} 
-                onChange={setTags} 
-                placeholder="Add tags (press Enter)"
-                suggestions={TAG_SUGGESTIONS}
-              />
             </div>
 
             {/* Notes */}
