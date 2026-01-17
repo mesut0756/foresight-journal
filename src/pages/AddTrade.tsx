@@ -142,10 +142,10 @@ export default function AddTrade() {
   const beforeScreenshots = pendingScreenshots.filter(s => s.type === 'before');
   const afterScreenshots = pendingScreenshots.filter(s => s.type === 'after');
 
-  const ScreenshotCard = ({ screenshot }: { screenshot: PendingScreenshot }) => {
+  const renderScreenshotCard = (screenshot: PendingScreenshot) => {
     const actualIndex = pendingScreenshots.findIndex(s => s === screenshot);
     return (
-      <div className="relative rounded-xl overflow-hidden border border-border group">
+      <div key={screenshot.type} className="relative rounded-xl overflow-hidden border border-border group">
         <img 
           src={screenshot.previewUrl} 
           alt={`${screenshot.type} screenshot`}
@@ -345,7 +345,7 @@ export default function AddTrade() {
                   Before Trade
                 </Label>
                 {beforeScreenshots.length > 0 ? (
-                  <ScreenshotCard screenshot={beforeScreenshots[0]} />
+                  renderScreenshotCard(beforeScreenshots[0])
                 ) : (
                   <UploadButton type="before" label="Add Before Screenshot" />
                 )}
@@ -358,7 +358,7 @@ export default function AddTrade() {
                   After Trade (Result)
                 </Label>
                 {afterScreenshots.length > 0 ? (
-                  <ScreenshotCard screenshot={afterScreenshots[0]} />
+                  renderScreenshotCard(afterScreenshots[0])
                 ) : (
                   <UploadButton type="after" label="Add After Screenshot" />
                 )}
