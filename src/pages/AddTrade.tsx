@@ -62,7 +62,14 @@ export default function AddTrade() {
     const file = e.target.files?.[0];
     if (file) {
       const previewUrl = URL.createObjectURL(file);
-      setPendingScreenshots(prev => [...prev, { file, previewUrl, type, description: '' }]);
+      // Replace existing screenshot of the same type (only one allowed per type)
+      setPendingScreenshots(prev => {
+        const existing = prev.find(s => s.type === type);
+        if (existing) {
+          URL.revokeObjectURL(existing.previewUrl);
+        }
+        return [...prev.filter(s => s.type !== type), { file, previewUrl, type, description: '' }];
+      });
     }
     e.target.value = '';
   };
@@ -135,14 +142,14 @@ export default function AddTrade() {
   const beforeScreenshots = pendingScreenshots.filter(s => s.type === 'before');
   const afterScreenshots = pendingScreenshots.filter(s => s.type === 'after');
 
-  const ScreenshotCard = ({ screenshot, index }: { screenshot: PendingScreenshot; index: number }) => {
+  const ScreenshotCard = ({ screenshot }: { screenshot: PendingScreenshot }) => {
     const actualIndex = pendingScreenshots.findIndex(s => s === screenshot);
     return (
       <div className="relative rounded-xl overflow-hidden border border-border group">
         <img 
           src={screenshot.previewUrl} 
           alt={`${screenshot.type} screenshot`}
-          className="w-full h-48 object-cover"
+          className="w-full h-64 object-cover"
         />
         <button
           type="button"
@@ -151,10 +158,10 @@ export default function AddTrade() {
         >
           <X className="w-4 h-4" />
         </button>
-        <div className="p-2 bg-background/90">
-          <Input
+        <div className="p-3 bg-background/90">
+          <Textarea
             placeholder="Add description..."
-            className="text-sm h-8"
+            className="text-sm min-h-[80px] resize-none"
             value={screenshot.description}
             onChange={(e) => updateScreenshotDescription(actualIndex, e.target.value)}
           />
@@ -164,7 +171,7 @@ export default function AddTrade() {
   };
 
   const UploadButton = ({ type, label }: { type: 'before' | 'after'; label: string }) => (
-    <label className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-secondary/30 transition-colors">
+    <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border rounded-xl cursor-pointer hover:border-primary/50 hover:bg-secondary/30 transition-colors">
       <div className="flex flex-col items-center justify-center">
         <Upload className="w-8 h-8 text-muted-foreground mb-2" />
         <span className="text-sm text-muted-foreground font-medium">{label}</span>
@@ -331,33 +338,30 @@ export default function AddTrade() {
             <div className="space-y-4 pt-4 border-t border-border">
               <h3 className="text-lg font-semibold text-foreground">Trade Screenshots</h3>
               
-              {/* Before Trade Screenshots */}
+              {/* Before Trade Screenshot */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base">
                   <Camera className="w-5 h-5" />
                   Before Trade
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {beforeScreenshots.map((screenshot, index) => (
-                    <ScreenshotCard key={index} screenshot={screenshot} index={index} />
-                  ))}
-                  <UploadButton type="before" label="Add Before Screenshot"/>
-                </div>
+                {beforeScreenshots.length > 0 ? (
+                  <ScreenshotCard screenshot={beforeScreenshots[0]} />
+                ) : (
+                  <UploadButton type="before" label="Add Before Screenshot" />
+                )}
               </div>
 
-              {/* After Trade Screenshots */}
+              {/* After Trade Screenshot */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2 text-base">
                   <ImageIcon className="w-5 h-5" />
                   After Trade (Result)
                 </Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {afterScreenshots.map((screenshot, index) => (
-                    <ScreenshotCard key={index} screenshot={screenshot} index={index}/>
-                  ))}
-                  <UploadButton type="after" label="Add After Screenshot"
-                  />
-                </div>
+                {afterScreenshots.length > 0 ? (
+                  <ScreenshotCard screenshot={afterScreenshots[0]} />
+                ) : (
+                  <UploadButton type="after" label="Add After Screenshot" />
+                )}
               </div>
             </div>
 
