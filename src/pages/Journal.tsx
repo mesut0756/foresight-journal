@@ -99,7 +99,7 @@ export default function Journal() {
     }
     switch (result) {
       case "win":
-        return <Badge className="bg-chart-2/20 text-chart-2 border-chart-2/50">Win</Badge>;
+        return <Badge className="text-green-600 bg-green-500/40 border-chart-2/50">Win</Badge>;
       case "loss":
         return <Badge className="bg-destructive/20 text-destructive border-destructive/50">Loss</Badge>;
       case "breakeven":
@@ -230,14 +230,7 @@ export default function Journal() {
                       <Tag className="w-4 h-4 mr-2" />
                       <SelectValue placeholder="All Tags" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Tags</SelectItem>
-                      {allTags.map((tag) => (
-                        <SelectItem key={tag} value={tag}>
-                          {tag}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                    
                   </Select>
                 )}
               </div>
@@ -255,7 +248,6 @@ export default function Journal() {
                       <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Status</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Pips</th>
                       <th className="text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">P/L</th>
-                      <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Tags</th>
                       <th className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider px-5 py-3">Actions</th>
                     </tr>
                   </thead>
@@ -295,32 +287,7 @@ export default function Journal() {
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
-                        </td>
-                        <td className="px-5 py-4">
-                          <div className="flex flex-wrap gap-1 max-w-[150px]">
-                            {trade.tags && trade.tags.length > 0 ? (
-                              <>
-                                {trade.tags.slice(0, 2).map((tag) => (
-                                  <Badge
-                                    key={tag}
-                                    variant="outline"
-                                    className={`${getTagColor(tag)} text-xs py-0 px-1.5 cursor-pointer`}
-                                    onClick={() => setTagFilter(tag)}
-                                  >
-                                    {tag}
-                                  </Badge>
-                                ))}
-                                {trade.tags.length > 2 && (
-                                  <Badge variant="outline" className="text-xs py-0 px-1.5 text-muted-foreground">
-                                    +{trade.tags.length - 2}
-                                  </Badge>
-                                )}
-                              </>
-                            ) : (
-                              <span className="text-muted-foreground text-sm">-</span>
-                            )}
-                          </div>
-                        </td>
+                        </td>                      
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-center gap-1">
                             {!trade.result && (

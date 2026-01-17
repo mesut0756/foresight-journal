@@ -341,7 +341,7 @@ export default function AddTrade() {
                   {beforeScreenshots.map((screenshot, index) => (
                     <ScreenshotCard key={index} screenshot={screenshot} index={index} />
                   ))}
-                  <UploadButton type="before" label="Add Before Screenshot" />
+                  <UploadButton type="before" label="Add Before Screenshot"/>
                 </div>
               </div>
 
@@ -353,9 +353,10 @@ export default function AddTrade() {
                 </Label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {afterScreenshots.map((screenshot, index) => (
-                    <ScreenshotCard key={index} screenshot={screenshot} index={index} />
+                    <ScreenshotCard key={index} screenshot={screenshot} index={index}/>
                   ))}
-                  <UploadButton type="after" label="Add After Screenshot" />
+                  <UploadButton type="after" label="Add After Screenshot"
+                  />
                 </div>
               </div>
             </div>

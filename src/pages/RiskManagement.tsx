@@ -218,27 +218,12 @@ export default function RiskManagement() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="stopLoss">Stop Loss (pips)</Label>
-                <Input
-                  id="stopLoss"
-                  type="number"
-                  placeholder="50"
-                  className="input-field font-mono"
-                  value={stopLossPips}
-                  onChange={(e) => setStopLossPips(e.target.value)}
-                />
-              </div>
-
               <div className="p-4 bg-secondary/50 rounded-lg border border-border/50">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Risk Amount</span>
-                  <span className="font-mono font-medium text-foreground">${calculatedRisk.amount.toFixed(2)}</span>
+                  <span className="font-mono font-medium text-destructive">${calculatedRisk.amount.toFixed(2)}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Recommended Lot Size</span>
-                  <span className="font-mono font-semibold text-primary">{calculatedRisk.lotSize.toFixed(2)}</span>
-                </div>
+               
               </div>
             </div>
           </div>
