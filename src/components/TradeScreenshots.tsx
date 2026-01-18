@@ -132,7 +132,7 @@ export function TradeScreenshots({ tradeId }: TradeScreenshotsProps) {
           <Camera className="w-5 h-5" />
           Before Trade
         </Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
           {beforeScreenshots.map((screenshot) => (
             <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
           ))}
@@ -146,7 +146,7 @@ export function TradeScreenshots({ tradeId }: TradeScreenshotsProps) {
           <ImageIcon className="w-5 h-5" />
           After Trade (Result)
         </Label>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
           {afterScreenshots.map((screenshot) => (
             <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
           ))}
