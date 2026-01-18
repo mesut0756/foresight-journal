@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { ResponsiveHomeRoute } from "@/components/ResponsiveHomeRoute";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import AddTrade from "./pages/AddTrade";
@@ -28,8 +29,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              <Route path="/" element={<ResponsiveHomeRoute />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/add-trade" element={<ProtectedRoute><AddTrade /></ProtectedRoute>} />
               <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
               <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
