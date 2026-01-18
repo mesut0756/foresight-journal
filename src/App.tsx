@@ -16,6 +16,7 @@ import Strategies from "./pages/Strategies";
 import PairsAnalysis from "./pages/PairsAnalysis";
 import RiskManagement from "./pages/RiskManagement";
 import Settings from "./pages/Settings";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/pairs-analysis" element={<ProtectedRoute><PairsAnalysis /></ProtectedRoute>} />
               <Route path="/risk-management" element={<ProtectedRoute><RiskManagement /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

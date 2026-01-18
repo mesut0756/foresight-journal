@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/components/ThemeProvider';
 import { Moon, Sun, TrendingUp, Brain, BarChart3 } from 'lucide-react';
@@ -153,8 +153,11 @@ export default function Homepage() {
 
         {/* Footer */}
         <footer className="py-8 px-6 border-t border-border">
-          <div className="max-w-7xl mx-auto text-center text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Forex Journal. Built for traders, by traders.
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+            <span>© {new Date().getFullYear()} Forex Journal. Built for traders, by traders.</span>
+            <Link to="/privacy-policy" className="hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
           </div>
         </footer>
       </main>
