@@ -48,7 +48,7 @@ export default function Auth() {
         toast.error(error);
       } else {
         toast.success('Welcome back!');
-        navigate('/');
+        navigate('/dashboard');
       }
     } else {
       const { error } = await signUp(username, password);
@@ -56,7 +56,7 @@ export default function Auth() {
         toast.error(error);
       } else {
         toast.success('Account created successfully!');
-        navigate('/');
+        navigate('/dashboard');
       }
     }
 

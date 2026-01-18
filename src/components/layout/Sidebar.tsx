@@ -18,7 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 const tradingLinks = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/add-trade", label: "Add Trade", icon: PlusCircle },
   { to: "/journal", label: "Journal", icon: BookOpen },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -63,7 +63,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   };
 
   const NavItem = ({ to, label, icon: Icon }: { to: string; label: string; icon: React.ComponentType<{ className?: string }> }) => {
-    const isActive = location.pathname === to;
+    const isActive = location.pathname === to || 
+      (to === "/dashboard" && location.pathname === "/");
     
     return (
       <Link
