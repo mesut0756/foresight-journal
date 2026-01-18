@@ -126,32 +126,30 @@ export function TradeScreenshots({ tradeId }: TradeScreenshotsProps) {
 
   return (
     <div className="space-y-4">
-      {/* Before Trade Screenshots */}
+      {/* Before Trade Screenshot */}
       <div className="space-y-3">
         <Label className="flex items-center gap-2 text-base">
           <Camera className="w-5 h-5" />
           Before Trade
         </Label>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-          {beforeScreenshots.map((screenshot) => (
-            <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
-          ))}
+        {beforeScreenshots.length > 0 ? (
+          <ScreenshotCard screenshot={beforeScreenshots[0]} />
+        ) : (
           <UploadButton type="before" label="Add Before Screenshot" />
-        </div>
+        )}
       </div>
 
-      {/* After Trade Screenshots */}
+      {/* After Trade Screenshot */}
       <div className="space-y-3">
         <Label className="flex items-center gap-2 text-base">
           <ImageIcon className="w-5 h-5" />
           After Trade (Result)
         </Label>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-          {afterScreenshots.map((screenshot) => (
-            <ScreenshotCard key={screenshot.id} screenshot={screenshot} />
-          ))}
+        {afterScreenshots.length > 0 ? (
+          <ScreenshotCard screenshot={afterScreenshots[0]} />
+        ) : (
           <UploadButton type="after" label="Add After Screenshot" />
-        </div>
+        )}
       </div>
 
       {/* Upload Preview Dialog */}
