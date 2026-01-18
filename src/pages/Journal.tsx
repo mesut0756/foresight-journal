@@ -272,8 +272,8 @@ export default function Journal() {
                         </td>
                         <td className="px-5 py-4 text-right">
                           {trade.result ? (
-                            <span className={`font-mono font-medium ${(trade.pips ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
-                              {(trade.pips ?? 0) > 0 ? "+" : ""}{trade.pips ?? 0}
+                            <span className={`font-mono font-medium ${trade.result === "loss" ? "loss-text" : "profit-text"}`}>
+                              {trade.result === "win" ? "+" : "-"}{Math.abs(trade.pips ?? 0)}
                             </span>
                           ) : (
                             <span className="text-muted-foreground">-</span>
