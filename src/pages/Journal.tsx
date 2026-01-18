@@ -273,7 +273,7 @@ export default function Journal() {
                         <td className="px-5 py-4 text-right">
                           {trade.result ? (
                             <span className={`font-mono font-medium ${(trade.pips ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
-                              {(trade.pips ?? 0) >= 0 ? "+" : ""}{trade.pips ?? 0}
+                              {(trade.pips ?? 0) > 0 ? "+" : ""}{trade.pips ?? 0}
                             </span>
                           ) : (
                             <span className="text-muted-foreground">-</span>
@@ -282,12 +282,12 @@ export default function Journal() {
                         <td className="px-5 py-4 text-right">
                           {trade.result ? (
                             <span className={`font-mono font-medium ${(trade.profit_loss ?? 0) >= 0 ? "profit-text" : "loss-text"}`}>
-                              {(trade.profit_loss ?? 0) >= 0 ? "+" : ""}${trade.profit_loss ?? 0}
+                              {(trade.profit_loss ?? 0) >= 0 ? `+$${trade.profit_loss ?? 0}` : `-$${Math.abs(trade.profit_loss ?? 0)}`}
                             </span>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
-                        </td>                      
+                        </td>
                         <td className="px-5 py-4">
                           <div className="flex items-center justify-center gap-1">
                             {!trade.result && (
