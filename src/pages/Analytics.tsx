@@ -92,7 +92,7 @@ export default function Analytics() {
         <MonthlyCalendar />
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-1 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {/* Performance by Pair */}
           <div className="chart-container animate-fade-in">
             <div className="mb-5">
