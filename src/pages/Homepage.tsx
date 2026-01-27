@@ -85,7 +85,7 @@ export default function Homepage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
               <Button
                 size="lg"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/auth?mode=signup')}
                 className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
               >
                 Get Started – It's Free
@@ -143,7 +143,7 @@ export default function Homepage() {
             </p>
             <Button
               size="lg"
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/auth?mode=signup')}
               className="bg-primary hover:bg-primary/90 text-lg px-10 py-6 transition-all duration-300 hover:shadow-lg hover:shadow-primary/25"
             >
               Create Your Free Journal
