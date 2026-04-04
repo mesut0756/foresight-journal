@@ -9,7 +9,6 @@ import {
   Shield,
   Settings,
   TrendingUp,
-  Menu,
   X,
   LogOut,
 } from "lucide-react";
