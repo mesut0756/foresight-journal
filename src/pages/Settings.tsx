@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,16 +12,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { forexPairs } from "@/data/mockData";
-import { Settings as SettingsIcon, Percent, DollarSign, Sun, Moon, Bell, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Percent, DollarSign, Sun, Moon, Bell, LogOut, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Settings() {
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { balance, updateBalance } = useAccountBalance();
   const navigate = useNavigate();
+  const [accountFloat, setAccountFloat] = useState("");
+
+  useEffect(() => {
+    if (balance !== undefined) {
+      setAccountFloat(balance.toString());
+    }
+  }, [balance]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -39,6 +49,35 @@ export default function Settings() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground mt-1">Customize your trading journal preferences</p>
+        </div>
+
+        {/* Account Balance */}
+        <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Wallet className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Account Balance</h3>
+              <p className="text-sm text-muted-foreground">Set your starting account float</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="accountFloat" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
+              Account Float
+            </Label>
+            <Input
+              id="accountFloat"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 10000"
+              className="input-field font-mono"
+              value={accountFloat}
+              onChange={(e) => setAccountFloat(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Your current account balance. Trade profits and losses will be added/subtracted from this.</p>
+          </div>
         </div>
 
         {/* Trading Preferences */}
@@ -172,7 +211,14 @@ export default function Settings() {
         </div>
 
         {/* Save Button */}
-        <Button className="w-full bg-primary hover:bg-primary/90 py-6 font-semibold">
+        <Button 
+          className="w-full bg-primary hover:bg-primary/90 py-6 font-semibold"
+          onClick={() => {
+            if (accountFloat) {
+              updateBalance.mutate(parseFloat(accountFloat));
+            }
+          }}
+        >
           Save Changes
         </Button>
       </div>

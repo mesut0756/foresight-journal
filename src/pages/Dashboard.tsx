@@ -1,4 +1,4 @@
-import { TrendingUp, Target, DollarSign, TrendingDown, BarChart3 } from "lucide-react";
+import { TrendingUp, Target, DollarSign, TrendingDown, BarChart3, Wallet } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { EquityChart } from "@/components/dashboard/EquityChart";
@@ -7,13 +7,17 @@ import { RecentTradesTable } from "@/components/dashboard/RecentTradesTable";
 import { EmptyState } from "@/components/EmptyState";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useTrades } from "@/hooks/useTrades";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const { stats, isLoading } = useDashboardStats();
   const { trades } = useTrades();
+  const { balance } = useAccountBalance();
   const navigate = useNavigate();
+
+  const currentBalance = balance + (stats?.totalProfit ?? 0);
 
   const hasTrades = trades.length > 0;
 
@@ -44,7 +48,7 @@ export default function Dashboard() {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
               <StatCard
                 title="Total Trades"
                 value={stats?.totalTrades.toString() ?? "0"}
@@ -67,6 +71,12 @@ export default function Dashboard() {
                 value={`$${stats?.maxDrawdown?.toLocaleString() ?? "0"}`}
                 icon={TrendingDown}
                 variant="destructive"
+              />
+              <StatCard
+                title="Account Balance"
+                value={`$${currentBalance.toLocaleString()}`}
+                icon={Wallet}
+                variant={currentBalance >= balance ? "success" : "destructive"}
               />
             </div>
 
