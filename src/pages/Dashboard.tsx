@@ -72,6 +72,12 @@ export default function Dashboard() {
                 icon={TrendingDown}
                 variant="destructive"
               />
+              <StatCard
+                title="Account Balance"
+                value={`$${currentBalance.toLocaleString()}`}
+                icon={Wallet}
+                variant={currentBalance >= balance ? "success" : "destructive"}
+              />
             </div>
 
             {/* Charts Row - Hidden on mobile */}
