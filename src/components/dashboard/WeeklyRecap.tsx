@@ -99,7 +99,7 @@ export function WeeklyRecap() {
         {/* Best pair */}
         {bestPair && (
           <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-yellow-500" />
+            <Trophy className="w-4 h-4 text-accent-foreground" />
             <span className="text-sm text-foreground">
               Best pair:{" "}
               <span className="font-semibold">{bestPair}</span>{" "}
