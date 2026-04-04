@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,16 +12,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { forexPairs } from "@/data/mockData";
-import { Settings as SettingsIcon, Percent, DollarSign, Sun, Moon, Bell, LogOut } from "lucide-react";
+import { Settings as SettingsIcon, Percent, DollarSign, Sun, Moon, Bell, LogOut, Wallet } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function Settings() {
   const { signOut } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { balance, updateBalance } = useAccountBalance();
   const navigate = useNavigate();
+  const [accountFloat, setAccountFloat] = useState("");
+
+  useEffect(() => {
+    if (balance !== undefined) {
+      setAccountFloat(balance.toString());
+    }
+  }, [balance]);
 
   const handleSignOut = async () => {
     await signOut();
