@@ -14,7 +14,10 @@ import { useNavigate } from "react-router-dom";
 export default function Dashboard() {
   const { stats, isLoading } = useDashboardStats();
   const { trades } = useTrades();
+  const { balance } = useAccountBalance();
   const navigate = useNavigate();
+
+  const currentBalance = balance + (stats?.totalProfit ?? 0);
 
   const hasTrades = trades.length > 0;
 
