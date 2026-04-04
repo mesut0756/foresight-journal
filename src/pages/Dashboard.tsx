@@ -4,6 +4,8 @@ import { StatCard } from "@/components/dashboard/StatCard";
 import { EquityChart } from "@/components/dashboard/EquityChart";
 import { WinLossChart } from "@/components/dashboard/WinLossChart";
 import { RecentTradesTable } from "@/components/dashboard/RecentTradesTable";
+import { TransactionHistory } from "@/components/dashboard/TransactionHistory";
+import { WeeklyRecap } from "@/components/dashboard/WeeklyRecap";
 import { EmptyState } from "@/components/EmptyState";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useTrades } from "@/hooks/useTrades";
@@ -87,6 +89,12 @@ export default function Dashboard() {
                 <WinLossChart />
               </div>
             </div>
+
+            {/* Weekly Recap (Sat/Sun only) */}
+            <WeeklyRecap />
+
+            {/* Transaction History */}
+            <TransactionHistory />
 
             {/* Recent Trades */}
             <RecentTradesTable />
