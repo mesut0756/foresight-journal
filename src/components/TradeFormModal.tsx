@@ -115,29 +115,20 @@ export function TradeFormModal({
   };
 
   const handleCloseTrade = async () => {
-    if (!trade || !profitLoss) return;
+    if (!trade || !profitLoss || !result) return;
 
-    const pl = parseFloat(profitLoss);
-    const calculatedResult = pl > 0 ? "win" : pl < 0 ? "loss" : "breakeven";
+    const pl = Math.abs(parseFloat(profitLoss));
+    const finalPl = result === "loss" ? -pl : pl;
+    const finalPips = pips ? (result === "loss" ? -Math.abs(parseFloat(pips)) : Math.abs(parseFloat(pips))) : null;
 
     await onSave({
       id: trade.id,
-      pips: pips ? parseFloat(pips) : null,
-      profit_loss: pl,
-      result: calculatedResult,
+      pips: finalPips,
+      profit_loss: finalPl,
+      result,
     });
     onOpenChange(false);
   };
-
-  // Auto-calculate result based on P/L
-  useEffect(() => {
-    if (profitLoss) {
-      const pl = parseFloat(profitLoss);
-      if (pl > 0) setResult("win");
-      else if (pl < 0) setResult("loss");
-      else setResult("breakeven");
-    }
-  }, [profitLoss]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
