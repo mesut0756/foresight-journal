@@ -51,6 +51,35 @@ export default function Settings() {
           <p className="text-muted-foreground mt-1">Customize your trading journal preferences</p>
         </div>
 
+        {/* Account Balance */}
+        <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Wallet className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Account Balance</h3>
+              <p className="text-sm text-muted-foreground">Set your starting account float</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="accountFloat" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-muted-foreground" />
+              Account Float
+            </Label>
+            <Input
+              id="accountFloat"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 10000"
+              className="input-field font-mono"
+              value={accountFloat}
+              onChange={(e) => setAccountFloat(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">Your current account balance. Trade profits and losses will be added/subtracted from this.</p>
+          </div>
+        </div>
+
         {/* Trading Preferences */}
         <div className="bg-card rounded-xl border border-border p-6 animate-fade-in">
           <div className="flex items-center gap-3 mb-6">
