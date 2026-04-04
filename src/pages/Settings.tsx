@@ -211,7 +211,14 @@ export default function Settings() {
         </div>
 
         {/* Save Button */}
-        <Button className="w-full bg-primary hover:bg-primary/90 py-6 font-semibold">
+        <Button 
+          className="w-full bg-primary hover:bg-primary/90 py-6 font-semibold"
+          onClick={() => {
+            if (accountFloat) {
+              updateBalance.mutate(parseFloat(accountFloat));
+            }
+          }}
+        >
           Save Changes
         </Button>
       </div>
