@@ -90,6 +90,12 @@ export default function Dashboard() {
               </div>
             </div>
 
+            {/* Weekly Recap (Sat/Sun only) */}
+            <WeeklyRecap />
+
+            {/* Transaction History */}
+            <TransactionHistory />
+
             {/* Recent Trades */}
             <RecentTradesTable />
           </>
