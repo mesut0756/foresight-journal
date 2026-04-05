@@ -10,6 +10,7 @@ import {
   PieChart,
   Shield,
   Settings,
+  ArrowLeftRight,
   X,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ const mainLinks = [
 ];
 
 const moreLinks = [
+  { to: "/transactions", label: "Funds", icon: ArrowLeftRight },
   { to: "/strategies", label: "Strategies", icon: Lightbulb },
   { to: "/pairs-analysis", label: "Pairs", icon: PieChart },
   { to: "/risk-management", label: "Risk", icon: Shield },

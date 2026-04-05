@@ -8,6 +8,7 @@ import {
   PieChart,
   Shield,
   Settings,
+  ArrowLeftRight,
   TrendingUp,
   X,
   LogOut,
@@ -30,6 +31,7 @@ const performanceLinks = [
 ];
 
 const accountLinks = [
+  { to: "/transactions", label: "Deposits & Withdrawals", icon: ArrowLeftRight },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
