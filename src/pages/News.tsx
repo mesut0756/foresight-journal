@@ -2,9 +2,9 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays } from "lucide-react";
-import { useEconomicCalendar, type ImpactLevel } from "@/hooks/useEconomicCalendar";
-import { format } from "date-fns";
+import { ExternalLink, Newspaper } from "lucide-react";
+import { useForexNews, type ImpactLevel } from "@/hooks/useEconomicCalendar";
+import { formatDistanceToNow } from "date-fns";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD"];
 
@@ -24,12 +24,13 @@ function ImpactBadge({ level }: { level: ImpactLevel }) {
   );
 }
 
-function EventCardSkeleton() {
+function NewsCardSkeleton() {
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-4 space-y-3">
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-3 w-full" />
+        <Skeleton className="h-3 w-5/6" />
         <div className="flex gap-2">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-3 w-24" />
@@ -39,33 +40,22 @@ function EventCardSkeleton() {
   );
 }
 
-function DataCell({ label, value, unit }: { label: string; value: number | null; unit: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-[10px] uppercase text-muted-foreground tracking-wider">{label}</p>
-      <p className="text-sm font-semibold text-foreground">
-        {value !== null ? `${value}${unit ? ` ${unit}` : ""}` : "—"}
-      </p>
-    </div>
-  );
-}
-
 export default function News() {
   const {
-    events,
+    items,
     isLoading,
     error,
     selectedCurrency,
     setSelectedCurrency,
-  } = useEconomicCalendar();
+  } = useForexNews();
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Economic Calendar</h1>
+          <h1 className="text-2xl font-bold text-foreground">Forex News</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Real-time economic events and data releases
+            Real-time forex market news powered by Finnhub
           </p>
         </div>
 
@@ -114,7 +104,7 @@ export default function News() {
         {error && (
           <Card className="border-destructive/50">
             <CardContent className="p-6 text-center text-destructive">
-              {error}
+              Unable to load news. Please try again later.
             </CardContent>
           </Card>
         )}
@@ -123,50 +113,59 @@ export default function News() {
         {isLoading && (
           <div className="grid gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <EventCardSkeleton key={i} />
+              <NewsCardSkeleton key={i} />
             ))}
           </div>
         )}
 
-        {/* Events */}
+        {/* Articles */}
         {!isLoading && !error && (
-          <div className="grid gap-3">
-            {events.length === 0 ? (
+          <div className="grid gap-4">
+            {items.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
-                  <CalendarDays className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                  <p className="text-muted-foreground">No economic events match your filters.</p>
+                  <Newspaper className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-muted-foreground">No news articles match your filters.</p>
                 </CardContent>
               </Card>
             ) : (
-              events.map((event) => (
-                <Card key={event.id} className="transition-shadow hover:shadow-md">
-                  <CardContent className="p-4 sm:p-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex-1 min-w-0 space-y-1.5">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <ImpactBadge level={event.impact} />
-                          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-                            {event.currency}
-                          </span>
+              items.map((article) => (
+                <a
+                  key={article.id}
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  <Card className="transition-shadow hover:shadow-md">
+                    <CardContent className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <ImpactBadge level={article.impact} />
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              {article.currency}
+                            </span>
+                          </div>
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                            {article.headline}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {article.summary}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="font-medium">{article.source}</span>
+                            <span>•</span>
+                            <span>
+                              {formatDistanceToNow(new Date(article.datetime * 1000), { addSuffix: true })}
+                            </span>
+                          </div>
                         </div>
-                        <h3 className="font-semibold text-foreground line-clamp-2">
-                          {event.event}
-                        </h3>
-                        <p className="text-xs text-muted-foreground">
-                          {event.time
-                            ? format(new Date(event.time), "MMM d, yyyy · h:mm a")
-                            : "Time TBD"}
-                        </p>
+                        <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
-                      <div className="flex gap-4 sm:gap-6 shrink-0">
-                        <DataCell label="Actual" value={event.actual} unit={event.unit} />
-                        <DataCell label="Forecast" value={event.estimate} unit={event.unit} />
-                        <DataCell label="Previous" value={event.prev} unit={event.unit} />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </a>
               ))
             )}
           </div>

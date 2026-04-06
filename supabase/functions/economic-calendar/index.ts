@@ -17,18 +17,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const from = url.searchParams.get('from');
-    const to = url.searchParams.get('to');
-
-    if (!from || !to) {
-      return new Response(JSON.stringify({ error: 'from and to query params required (YYYY-MM-DD)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const finnhubUrl = `https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${apiKey}`;
+    // Fetch forex market news
+    const finnhubUrl = `https://finnhub.io/api/v1/news?category=forex&token=${apiKey}`;
     const response = await fetch(finnhubUrl);
 
     if (!response.ok) {
@@ -43,7 +33,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    console.error('Economic calendar error:', error);
+    console.error('Finnhub news error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ error: message }), {
       status: 500,

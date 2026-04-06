@@ -1,109 +1,110 @@
 import { useState, useEffect, useMemo } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, addDays } from "date-fns";
 
 export type ImpactLevel = "high" | "medium" | "low";
 
-export interface EconomicEvent {
+export interface ForexNewsItem {
   id: string;
-  country: string;
+  headline: string;
+  summary: string;
+  source: string;
+  datetime: number;
+  url: string;
+  image: string;
   currency: string;
-  event: string;
-  time: string;
-  actual: number | null;
-  estimate: number | null;
-  prev: number | null;
   impact: ImpactLevel;
-  unit: string;
 }
 
-const HIGH_KEYWORDS = ["interest rate", "inflation", "nfp", "cpi", "fomc", "non-farm", "central bank", "rate decision", "monetary policy"];
-const MEDIUM_KEYWORDS = ["gdp", "employment", "retail sales", "pmi", "trade balance", "consumer confidence", "housing"];
+const HIGH_KEYWORDS = ["interest rate", "inflation", "nfp", "cpi", "fomc", "non-farm", "central bank", "rate decision", "monetary policy", "rate cut", "rate hike"];
+const MEDIUM_KEYWORDS = ["gdp", "employment", "retail sales", "pmi", "trade balance", "consumer confidence", "housing", "jobs", "payroll"];
 
-function inferImpact(eventName: string, apiImpact?: string): ImpactLevel {
-  if (apiImpact === "high") return "high";
-  if (apiImpact === "medium") return "medium";
-  if (apiImpact === "low") return "low";
+const CURRENCY_KEYWORDS: Record<string, string[]> = {
+  USD: ["usd", "dollar", "fed ", "federal reserve", "fomc", "u.s.", "us ", "united states", "treasury", "nfp", "wall street"],
+  EUR: ["eur", "euro", "ecb", "european", "eurozone", "eu "],
+  GBP: ["gbp", "pound", "sterling", "boe", "bank of england", "uk ", "britain", "british"],
+  JPY: ["jpy", "yen", "boj", "bank of japan", "japan"],
+  AUD: ["aud", "aussie", "rba", "australia", "australian"],
+  CAD: ["cad", "loonie", "boc", "bank of canada", "canada", "canadian"],
+};
 
-  const text = eventName.toLowerCase();
-  if (HIGH_KEYWORDS.some((k) => text.includes(k))) return "high";
-  if (MEDIUM_KEYWORDS.some((k) => text.includes(k))) return "medium";
+function inferImpact(text: string): ImpactLevel {
+  const lower = text.toLowerCase();
+  if (HIGH_KEYWORDS.some((k) => lower.includes(k))) return "high";
+  if (MEDIUM_KEYWORDS.some((k) => lower.includes(k))) return "medium";
   return "low";
 }
 
-const CURRENCY_MAP: Record<string, string> = {
-  US: "USD", EU: "EUR", GB: "GBP", JP: "JPY", AU: "AUD", CA: "CAD",
-  NZ: "NZD", CH: "CHF", CN: "CNY", DE: "EUR", FR: "EUR", IT: "EUR",
-};
+function inferCurrency(text: string): string {
+  const lower = text.toLowerCase();
+  for (const [currency, keywords] of Object.entries(CURRENCY_KEYWORDS)) {
+    if (keywords.some((k) => lower.includes(k))) return currency;
+  }
+  return "OTHER";
+}
 
-export function useEconomicCalendar() {
-  const [events, setEvents] = useState<EconomicEvent[]>([]);
+export function useForexNews() {
+  const [items, setItems] = useState<ForexNewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchEvents() {
+    async function fetchNews() {
       setIsLoading(true);
       setError(null);
       try {
-        const today = new Date();
-        const from = format(subDays(today, 3), "yyyy-MM-dd");
-        const to = format(addDays(today, 7), "yyyy-MM-dd");
-
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const url = `https://${projectId}.supabase.co/functions/v1/economic-calendar?from=${from}&to=${to}`;
+        const url = `https://${projectId}.supabase.co/functions/v1/economic-calendar`;
 
         const response = await fetch(url, {
           headers: {
-            "Authorization": `Bearer ${anonKey}`,
-            "apikey": anonKey,
+            Authorization: `Bearer ${anonKey}`,
+            apikey: anonKey,
           },
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch economic calendar");
+          throw new Error("Failed to fetch news");
         }
 
-        const result = await response.json();
-        const raw = result?.economicCalendar || result?.economic_calendar || [];
+        const raw: any[] = await response.json();
 
-        const mapped: EconomicEvent[] = raw.map((item: any, idx: number) => ({
-          id: `${item.country}-${item.event}-${item.time}-${idx}`,
-          country: item.country || "",
-          currency: CURRENCY_MAP[item.country] || item.country || "OTHER",
-          event: item.event || "Unknown Event",
-          time: item.time || "",
-          actual: item.actual ?? null,
-          estimate: item.estimate ?? null,
-          prev: item.prev ?? null,
-          impact: inferImpact(item.event || "", item.impact),
-          unit: item.unit || "",
-        }));
+        const mapped: ForexNewsItem[] = raw.map((item) => {
+          const text = `${item.headline || ""} ${item.summary || ""}`;
+          return {
+            id: String(item.id),
+            headline: item.headline || "Untitled",
+            summary: item.summary || "",
+            source: item.source || "Unknown",
+            datetime: item.datetime || 0,
+            url: item.url || "#",
+            image: item.image || "",
+            currency: inferCurrency(text),
+            impact: inferImpact(text),
+          };
+        });
 
-        // Sort: upcoming first
-        mapped.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-
-        setEvents(mapped);
+        // Sort newest first
+        mapped.sort((a, b) => b.datetime - a.datetime);
+        setItems(mapped);
       } catch (err: any) {
-        console.error("Economic calendar fetch error:", err);
-        setError(err.message || "Unable to load economic calendar");
+        console.error("Forex news fetch error:", err);
+        setError(err.message || "Unable to load news");
       } finally {
         setIsLoading(false);
       }
     }
 
-    fetchEvents();
+    fetchNews();
   }, []);
 
-  const filteredEvents = useMemo(() => {
-    if (!selectedCurrency) return events;
-    return events.filter((e) => e.currency === selectedCurrency);
-  }, [events, selectedCurrency]);
+  const filteredItems = useMemo(() => {
+    if (!selectedCurrency) return items;
+    return items.filter((e) => e.currency === selectedCurrency);
+  }, [items, selectedCurrency]);
 
   return {
-    events: filteredEvents,
+    items: filteredItems,
     isLoading,
     error,
     selectedCurrency,
