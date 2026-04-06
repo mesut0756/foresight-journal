@@ -51,13 +51,6 @@ export function useEconomicCalendar() {
         const from = format(subDays(today, 3), "yyyy-MM-dd");
         const to = format(addDays(today, 7), "yyyy-MM-dd");
 
-        const { data, error: fnError } = await supabase.functions.invoke("economic-calendar", {
-          body: null,
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
-
-        // supabase.functions.invoke doesn't support query params well, use fetch directly
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
         const url = `https://${projectId}.supabase.co/functions/v1/economic-calendar?from=${from}&to=${to}`;
