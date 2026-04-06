@@ -9,6 +9,7 @@ import {
   Shield,
   Settings,
   ArrowLeftRight,
+  Newspaper,
   TrendingUp,
   X,
   LogOut,
@@ -28,6 +29,10 @@ const performanceLinks = [
   { to: "/strategies", label: "Strategies", icon: Lightbulb },
   { to: "/pairs-analysis", label: "Pairs Analysis", icon: PieChart },
   { to: "/risk-management", label: "Risk Management", icon: Shield },
+];
+
+const marketLinks = [
+  { to: "/news", label: "News", icon: Newspaper },
 ];
 
 const accountLinks = [
@@ -144,6 +149,21 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             </h2>
             <div className="space-y-1">
               {performanceLinks.map((link) => (
+                <NavItem key={link.to} {...link} />
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="section-divider" />
+
+          {/* Market Section */}
+          <div>
+            <h2 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Market
+            </h2>
+            <div className="space-y-1">
+              {marketLinks.map((link) => (
                 <NavItem key={link.to} {...link} />
               ))}
             </div>

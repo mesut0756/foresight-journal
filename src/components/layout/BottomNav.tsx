@@ -11,6 +11,7 @@ import {
   Shield,
   Settings,
   ArrowLeftRight,
+  Newspaper,
   X,
 } from "lucide-react";
 
@@ -22,6 +23,7 @@ const mainLinks = [
 ];
 
 const moreLinks = [
+  { to: "/news", label: "News", icon: Newspaper },
   { to: "/transactions", label: "Funds", icon: ArrowLeftRight },
   { to: "/strategies", label: "Strategies", icon: Lightbulb },
   { to: "/pairs-analysis", label: "Pairs", icon: PieChart },
