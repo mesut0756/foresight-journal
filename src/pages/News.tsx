@@ -1,11 +1,9 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, Newspaper } from "lucide-react";
-import { useNews, getImpactLevel, type ImpactLevel } from "@/hooks/useNews";
+import { useForexNews, type ImpactLevel } from "@/hooks/useEconomicCalendar";
 import { formatDistanceToNow } from "date-fns";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD"];
@@ -44,23 +42,20 @@ function NewsCardSkeleton() {
 
 export default function News() {
   const {
-    articles,
+    items,
     isLoading,
     error,
     selectedCurrency,
     setSelectedCurrency,
-    highImpactOnly,
-    setHighImpactOnly,
-  } = useNews();
+  } = useForexNews();
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div>
           <h1 className="text-2xl font-bold text-foreground">Forex News</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Stay informed with the latest market-moving news
+            Real-time forex market news powered by Finnhub
           </p>
         </div>
 
@@ -84,43 +79,28 @@ export default function News() {
           </CardContent>
         </Card>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          {/* Currency filters */}
-          <div className="flex flex-wrap gap-2">
+        {/* Currency Filters */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant={selectedCurrency === null ? "default" : "outline"}
+            size="sm"
+            onClick={() => setSelectedCurrency(null)}
+          >
+            All
+          </Button>
+          {CURRENCIES.map((c) => (
             <Button
-              variant={selectedCurrency === null ? "default" : "outline"}
+              key={c}
+              variant={selectedCurrency === c ? "default" : "outline"}
               size="sm"
-              onClick={() => setSelectedCurrency(null)}
+              onClick={() => setSelectedCurrency(c === selectedCurrency ? null : c)}
             >
-              All
+              {c}
             </Button>
-            {CURRENCIES.map((c) => (
-              <Button
-                key={c}
-                variant={selectedCurrency === c ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCurrency(c === selectedCurrency ? null : c)}
-              >
-                {c}
-              </Button>
-            ))}
-          </div>
-
-          {/* High impact toggle */}
-          <div className="flex items-center gap-2 sm:ml-auto">
-            <Switch
-              checked={highImpactOnly}
-              onCheckedChange={setHighImpactOnly}
-              id="high-impact"
-            />
-            <label htmlFor="high-impact" className="text-sm font-medium cursor-pointer select-none">
-              High Impact Only
-            </label>
-          </div>
+          ))}
         </div>
 
-        {/* Error state */}
+        {/* Error */}
         {error && (
           <Card className="border-destructive/50">
             <CardContent className="p-6 text-center text-destructive">
@@ -141,7 +121,7 @@ export default function News() {
         {/* Articles */}
         {!isLoading && !error && (
           <div className="grid gap-4">
-            {articles.length === 0 ? (
+            {items.length === 0 ? (
               <Card>
                 <CardContent className="p-8 text-center">
                   <Newspaper className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
@@ -149,51 +129,44 @@ export default function News() {
                 </CardContent>
               </Card>
             ) : (
-              articles.map((article) => {
-                const impact = getImpactLevel(article.title, article.description);
-                return (
-                  <a
-                    key={article.id}
-                    href={article.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group"
-                  >
-                    <Card className="transition-shadow hover:shadow-md">
-                      <CardContent className="p-4 sm:p-5">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <ImpactBadge level={impact} />
-                              <div className="flex gap-1">
-                                {article.currencies.map((c) => (
-                                  <Badge key={c} className="text-[10px] px-1.5 py-0 bg-muted text-muted-foreground border-0">
-                                    {c}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                              {article.title}
-                            </h3>
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {article.description}
-                            </p>
-                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                              <span className="font-medium">{article.source}</span>
-                              <span>•</span>
-                              <span>
-                                {formatDistanceToNow(new Date(article.publishedAt), { addSuffix: true })}
-                              </span>
-                            </div>
+              items.map((article) => (
+                <a
+                  key={article.id}
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
+                >
+                  <Card className="transition-shadow hover:shadow-md">
+                    <CardContent className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <ImpactBadge level={article.impact} />
+                            <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                              {article.currency}
+                            </span>
                           </div>
-                          <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                            {article.headline}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {article.summary}
+                          </p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="font-medium">{article.source}</span>
+                            <span>•</span>
+                            <span>
+                              {formatDistanceToNow(new Date(article.datetime * 1000), { addSuffix: true })}
+                            </span>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </a>
-                );
-              })
+                        <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </a>
+              ))
             )}
           </div>
         )}
