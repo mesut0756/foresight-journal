@@ -2,7 +2,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -42,6 +42,11 @@ export default function News() {
     error,
     selectedCurrency,
     setSelectedCurrency,
+    weekOffset,
+    weekRange,
+    goNextWeek,
+    goPrevWeek,
+    goCurrentWeek,
   } = useEconomicCalendar();
 
   const dateKeys = Object.keys(groupedEvents);
@@ -49,11 +54,29 @@ export default function News() {
   return (
     <DashboardLayout>
       <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Economic Calendar</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Upcoming and recent economic events
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Economic Calendar</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              {weekRange.from} – {weekRange.to}
+            </p>
+          </div>
+          {/* Week Navigation */}
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" size="sm" className="h-8 px-2.5" onClick={goPrevWeek}>
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Prev
+            </Button>
+            {weekOffset !== 0 && (
+              <Button variant="outline" size="sm" className="h-8 px-2.5" onClick={goCurrentWeek}>
+                Today
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="h-8 px-2.5" onClick={goNextWeek}>
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
 
         {/* Legend + Filters */}
@@ -110,7 +133,12 @@ export default function News() {
             <Card>
               <CardContent className="p-8 text-center">
                 <CalendarDays className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-                <p className="text-muted-foreground">No economic events match your filters.</p>
+                <p className="text-muted-foreground">
+                  No economic events for this week.
+                  {weekOffset !== 0 && (
+                    <> <span className="text-xs">(Note: the free data source only provides the current week's data)</span></>
+                  )}
+                </p>
               </CardContent>
             </Card>
           ) : (
