@@ -23,7 +23,7 @@ const mainLinks = [
 ];
 
 const moreLinks = [
-  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/news", label: "Calendar", icon: Newspaper },
   { to: "/transactions", label: "Funds", icon: ArrowLeftRight },
   { to: "/strategies", label: "Strategies", icon: Lightbulb },
   { to: "/pairs-analysis", label: "Pairs", icon: PieChart },

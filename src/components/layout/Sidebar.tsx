@@ -32,7 +32,7 @@ const performanceLinks = [
 ];
 
 const marketLinks = [
-  { to: "/news", label: "News", icon: Newspaper },
+  { to: "/news", label: "Economic Calendar", icon: Newspaper },
 ];
 
 const accountLinks = [
