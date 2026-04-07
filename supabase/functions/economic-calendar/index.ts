@@ -8,32 +8,12 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  const apiKey = Deno.env.get('FINNHUB_API_KEY');
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'FINNHUB_API_KEY not configured' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
   try {
-    const url = new URL(req.url);
-    const from = url.searchParams.get('from');
-    const to = url.searchParams.get('to');
-
-    if (!from || !to) {
-      return new Response(JSON.stringify({ error: 'from and to query params required (YYYY-MM-DD)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const finnhubUrl = `https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${apiKey}`;
-    const response = await fetch(finnhubUrl);
+    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Finnhub API error [${response.status}]: ${body}`);
+      throw new Error(`Calendar API error [${response.status}]: ${body}`);
     }
 
     const data = await response.json();

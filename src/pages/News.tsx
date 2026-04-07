@@ -20,6 +20,7 @@ const impactIcons: Record<ImpactLevel, string> = {
   high: "🔴",
   medium: "🟡",
   low: "🟢",
+  holiday: "📁",
 };
 
 function formatDateLabel(dateStr: string): string {
@@ -31,20 +32,6 @@ function formatDateLabel(dateStr: string): string {
     return format(date, "EEE, MMM d");
   } catch {
     return dateStr;
-  }
-}
-
-function formatTime(time: string): string {
-  if (!time || time === "All Day") return "All Day";
-  // time comes as HH:mm:ss or HH:mm
-  try {
-    const [h, m] = time.split(":");
-    const hour = parseInt(h, 10);
-    const ampm = hour >= 12 ? "pm" : "am";
-    const h12 = hour % 12 || 12;
-    return `${h12}:${m}${ampm}`;
-  } catch {
-    return time;
   }
 }
 
@@ -155,41 +142,43 @@ export default function News() {
                             className={
                               ev.impact === "high"
                                 ? "bg-red-500/5 hover:bg-red-500/10"
+                                : ev.impact === "holiday"
+                                ? "bg-muted/30 hover:bg-muted/50"
                                 : undefined
                             }
                           >
                             <TableCell className="py-2 text-xs text-muted-foreground font-mono">
-                              {formatTime(ev.time)}
+                              {ev.impact === "holiday" ? "All Day" : ev.time}
                             </TableCell>
                             <TableCell className="py-2">
-                              <span className="text-xs font-semibold">{ev.currency}</span>
+                              <span className="text-xs font-semibold">{ev.country}</span>
                             </TableCell>
                             <TableCell className="py-2 text-center">
                               {impactIcons[ev.impact]}
                             </TableCell>
                             <TableCell className="py-2 text-sm font-medium text-foreground">
-                              {ev.event}
+                              {ev.title}
                             </TableCell>
                             <TableCell className="py-2 text-right text-xs font-mono">
-                              {ev.actual != null ? (
+                              {ev.actual ? (
                                 <span className={
-                                  ev.estimate != null && ev.actual !== ev.estimate
-                                    ? parseFloat(ev.actual) > parseFloat(ev.estimate)
+                                  ev.forecast && ev.actual !== ev.forecast
+                                    ? parseFloat(ev.actual) > parseFloat(ev.forecast)
                                       ? "text-green-600 font-semibold"
                                       : "text-red-500 font-semibold"
                                     : ""
                                 }>
-                                  {ev.actual}{ev.unit}
+                                  {ev.actual}
                                 </span>
                               ) : (
                                 <span className="text-muted-foreground">—</span>
                               )}
                             </TableCell>
                             <TableCell className="py-2 text-right text-xs font-mono text-muted-foreground">
-                              {ev.estimate != null ? `${ev.estimate}${ev.unit}` : "—"}
+                              {ev.forecast || "—"}
                             </TableCell>
                             <TableCell className="py-2 text-right text-xs font-mono text-muted-foreground">
-                              {ev.prev != null ? `${ev.prev}${ev.unit}` : "—"}
+                              {ev.previous || "—"}
                             </TableCell>
                           </TableRow>
                         ))}
