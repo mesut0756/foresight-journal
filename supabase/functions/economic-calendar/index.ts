@@ -3,23 +3,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function getWeekRange(offset: number): { from: string; to: string } {
-  const now = new Date();
-  // Move to start of current week (Monday)
-  const day = now.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday + offset * 7);
-  monday.setHours(0, 0, 0, 0);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  const fmt = (d: Date) => d.toISOString().split('T')[0];
-  return { from: fmt(monday), to: fmt(sunday) };
-}
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -27,22 +10,25 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    const offset = parseInt(url.searchParams.get('offset') || '0', 10);
-    const { from, to } = getWeekRange(offset);
+    const from = url.searchParams.get('from') || '';
+    const to = url.searchParams.get('to') || '';
 
-    const response = await fetch(
-      `https://nfs.faireconomy.media/ff_calendar_thisweek.json`
-    );
+    const apiKey = Deno.env.get('FINNHUB_API_KEY');
+    if (!apiKey) {
+      throw new Error('FINNHUB_API_KEY not configured');
+    }
+
+    const finnhubUrl = `https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${apiKey}`;
+    const response = await fetch(finnhubUrl);
 
     if (!response.ok) {
       const body = await response.text();
-      throw new Error(`Calendar API error [${response.status}]: ${body}`);
+      throw new Error(`Finnhub API error [${response.status}]: ${body}`);
     }
 
     const data = await response.json();
 
-    // The free API only returns this week's data, so we return it with the requested range info
-    return new Response(JSON.stringify({ events: data, from, to, offset }), {
+    return new Response(JSON.stringify(data), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
