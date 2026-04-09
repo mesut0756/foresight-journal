@@ -12,18 +12,70 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, pair } = await req.json();
+    const body = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Handle "make it brief" summarization
+    if (body.summarize && body.fullAnalysis) {
+      const response = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: `You are a forex signal summarizer. Take the full analysis and condense it into a brief, easy-to-read format:
+
+1. **Signal**: BUY/SELL/NEUTRAL
+2. **Entry**: price
+3. **Stop Loss**: price
+4. **Take Profit**: price
+5. **Risk-Reward**: ratio
+6. **Confidence**: Low/Medium/High
+
+Then 2-3 sentences max explaining why. No extra sections. Keep it under 100 words total.`,
+              },
+              {
+                role: "user",
+                content: `Summarize this analysis briefly:\n\n${body.fullAnalysis}`,
+              },
+            ],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("AI gateway error:", response.status, text);
+        throw new Error("Summarization failed");
+      }
+
+      const data = await response.json();
+      const analysis = data.choices?.[0]?.message?.content || "No summary generated.";
+
+      return new Response(
+        JSON.stringify({ analysis }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle chart analysis
+    const { imageBase64, pair } = body;
 
     if (!imageBase64) {
       return new Response(
         JSON.stringify({ error: "Please provide a chart screenshot" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     // Fetch economic calendar for context
