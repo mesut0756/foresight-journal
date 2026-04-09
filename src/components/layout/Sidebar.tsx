@@ -10,6 +10,7 @@ import {
   Settings,
   ArrowLeftRight,
   Newspaper,
+  Zap,
   TrendingUp,
   X,
   LogOut,
@@ -32,6 +33,7 @@ const performanceLinks = [
 ];
 
 const marketLinks = [
+  { to: "/signals", label: "AI Signals", icon: Zap },
   { to: "/news", label: "Economic Calendar", icon: Newspaper },
 ];
 
