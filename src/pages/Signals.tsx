@@ -3,7 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Zap, TrendingUp, TrendingDown, Minus, Loader2, ImageIcon, X } from "lucide-react";
+import { Upload, Zap, TrendingUp, TrendingDown, Minus, Loader2, ImageIcon, X, AlignLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -19,6 +19,9 @@ export default function Signals() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<string | null>(null);
+  const [briefAnalysis, setBriefAnalysis] = useState<string | null>(null);
+  const [showBrief, setShowBrief] = useState(false);
+  const [isBriefing, setIsBriefing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +45,8 @@ export default function Signals() {
       setImagePreview(result);
       setImageBase64(result);
       setAnalysis(null);
+      setBriefAnalysis(null);
+      setShowBrief(false);
     };
     reader.readAsDataURL(file);
   };
@@ -54,6 +59,8 @@ export default function Signals() {
 
     setIsAnalyzing(true);
     setAnalysis(null);
+    setBriefAnalysis(null);
+    setShowBrief(false);
 
     try {
       const { data, error } = await supabase.functions.invoke("trade-signals", {
@@ -75,20 +82,45 @@ export default function Signals() {
     setImagePreview(null);
     setImageBase64(null);
     setAnalysis(null);
+    setBriefAnalysis(null);
+    setShowBrief(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleMakeBrief = async () => {
+    if (briefAnalysis) {
+      setShowBrief(!showBrief);
+      return;
+    }
+    if (!analysis) return;
+
+    setIsBriefing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("trade-signals", {
+        body: { summarize: true, fullAnalysis: analysis },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setBriefAnalysis(data.analysis);
+      setShowBrief(true);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to generate brief summary");
+    } finally {
+      setIsBriefing(false);
+    }
   };
 
   const getSignalBadge = () => {
     if (!analysis) return null;
     const upper = analysis.toUpperCase();
-    if (upper.includes("**BUY**") || upper.includes("SIGNAL: BUY") || upper.includes("RECOMMENDATION: BUY")) {
+    if (upper.includes("**BUY**") || upper.includes("SIGNAL: BUY") || upper.includes("RECOMMENDATION: BUY") || upper.includes("SIGNAL**: BUY")) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
           <TrendingUp className="w-4 h-4" /> BUY SIGNAL
         </span>
       );
     }
-    if (upper.includes("**SELL**") || upper.includes("SIGNAL: SELL") || upper.includes("RECOMMENDATION: SELL")) {
+    if (upper.includes("**SELL**") || upper.includes("SIGNAL: SELL") || upper.includes("RECOMMENDATION: SELL") || upper.includes("SIGNAL**: SELL")) {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/15 text-red-600 dark:text-red-400 font-semibold text-sm">
           <TrendingDown className="w-4 h-4" /> SELL SIGNAL
@@ -204,10 +236,23 @@ export default function Signals() {
                     <CardTitle>Analysis Result</CardTitle>
                     {getSignalBadge()}
                   </div>
+                  <Button
+                    variant={showBrief ? "default" : "outline"}
+                    size="sm"
+                    className="w-fit mt-2"
+                    onClick={handleMakeBrief}
+                    disabled={isBriefing}
+                  >
+                    {isBriefing ? (
+                      <><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Summarizing...</>
+                    ) : (
+                      <><AlignLeft className="w-3 h-3 mr-1.5" /> {showBrief ? "Show full analysis" : "Make it brief"}</>
+                    )}
+                  </Button>
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-sm dark:prose-invert max-w-none max-h-[500px] overflow-y-auto pr-2">
-                    <ReactMarkdown>{analysis}</ReactMarkdown>
+                    <ReactMarkdown>{showBrief && briefAnalysis ? briefAnalysis : analysis}</ReactMarkdown>
                   </div>
                 </CardContent>
               </>

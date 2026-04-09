@@ -12,18 +12,70 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, pair } = await req.json();
+    const body = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
+    }
+
+    // Handle "make it brief" summarization
+    if (body.summarize && body.fullAnalysis) {
+      const response = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              {
+                role: "system",
+                content: `You are a forex signal summarizer. Take the full analysis and condense it into a brief, easy-to-read format:
+
+1. **Signal**: BUY/SELL/NEUTRAL
+2. **Entry**: price
+3. **Stop Loss**: price
+4. **Take Profit**: price
+5. **Risk-Reward**: ratio
+6. **Confidence**: Low/Medium/High
+
+Then 2-3 sentences max explaining why. No extra sections. Keep it under 100 words total.`,
+              },
+              {
+                role: "user",
+                content: `Summarize this analysis briefly:\n\n${body.fullAnalysis}`,
+              },
+            ],
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("AI gateway error:", response.status, text);
+        throw new Error("Summarization failed");
+      }
+
+      const data = await response.json();
+      const analysis = data.choices?.[0]?.message?.content || "No summary generated.";
+
+      return new Response(
+        JSON.stringify({ analysis }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle chart analysis
+    const { imageBase64, pair } = body;
 
     if (!imageBase64) {
       return new Response(
         JSON.stringify({ error: "Please provide a chart screenshot" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-    }
-
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     // Fetch economic calendar for context
@@ -56,15 +108,22 @@ serve(async (req) => {
 
     const systemPrompt = `You are an expert forex technical analyst and signal provider. Analyze the provided chart screenshot in detail.
 
-Your analysis MUST include:
+IMPORTANT: Start your response with a **Summary** section at the very top containing:
+- **Signal**: BUY or SELL or NEUTRAL
+- **Entry**: approximate entry price
+- **Stop Loss**: approximate SL level
+- **Take Profit**: approximate TP level(s)
+- **Risk-Reward Ratio**: estimated R:R
+
+Then write a brief paragraph explaining WHY you chose this direction (2-3 sentences max).
+
+After the summary, provide detailed analysis:
 1. **Market Structure**: Identify Higher Highs (HH), Higher Lows (HL), Lower Highs (LH), Lower Lows (LL). Note any breaks of structure (BOS) or changes of character (CHoCH).
 2. **Trend Analysis**: Current trend direction, strength, and any signs of reversal.
 3. **Key Levels**: Support/resistance zones, order blocks, fair value gaps (FVG), liquidity pools.
 4. **Price Action**: Current candlestick patterns, momentum, and volume context.
-5. **Trade Signal**: Provide a clear BUY or SELL recommendation, or NEUTRAL if no clear setup.
-6. **Entry, Stop Loss & Take Profit**: Suggest approximate levels based on the chart.
-7. **Risk Assessment**: Rate confidence (Low/Medium/High) and explain risks.
-8. **News Impact**: Consider any upcoming economic events that could affect this trade.${newsContext}
+5. **Risk Assessment**: Rate confidence (Low/Medium/High) and explain risks.
+6. **News Impact**: Consider any upcoming economic events that could affect this trade.${newsContext}
 
 Format your response in clear sections with markdown. Be specific about what you see on the chart. If the image is unclear or not a valid chart, say so honestly.`;
 
