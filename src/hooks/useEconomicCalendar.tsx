@@ -49,7 +49,7 @@ export function useEconomicCalendar() {
       try {
         const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
         const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const url = `https://${projectId}.supabase.co/functions/v1/economic-calendar?offset=${weekOffset}`;
+        const url = `https://${projectId}.supabase.co/functions/v1/economic-calendar`;
 
         const response = await fetch(url, {
           headers: {
