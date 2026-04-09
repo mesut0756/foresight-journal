@@ -9,26 +9,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const from = url.searchParams.get('from') || '';
-    const to = url.searchParams.get('to') || '';
-
-    const apiKey = Deno.env.get('FINNHUB_API_KEY');
-    if (!apiKey) {
-      throw new Error('FINNHUB_API_KEY not configured');
-    }
-
-    const finnhubUrl = `https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${apiKey}`;
-    const response = await fetch(finnhubUrl);
+    const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
 
     if (!response.ok) {
-      const body = await response.text();
-      throw new Error(`Finnhub API error [${response.status}]: ${body}`);
+      throw new Error(`API error [${response.status}]`);
     }
 
-    const data = await response.json();
+    const raw = await response.json();
 
-    return new Response(JSON.stringify(data), {
+    // Map FairEconomy format to our format
+    const events = (Array.isArray(raw) ? raw : []).map((item: any) => ({
+      title: item.title || '',
+      country: item.country || '',
+      date: item.date || '',
+      impact: item.impact || 'Low',
+      actual: item.actual ?? '',
+      forecast: item.forecast ?? '',
+      previous: item.previous ?? '',
+    }));
+
+    return new Response(JSON.stringify({ events }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
