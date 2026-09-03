@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { RiskWarningBell } from "@/components/RiskWarningBell";
 import { toast } from "sonner";
 
 const tradingLinks = [
@@ -116,15 +117,18 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               <p className="text-xs text-muted-foreground">Track your trades</p>
             </div>
           </div>
-          {/* Close button for mobile/tablet */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="lg:hidden hover:bg-sidebar-accent"
-            onClick={onToggle}
-          >
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <RiskWarningBell />
+            {/* Close button for mobile/tablet */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="lg:hidden hover:bg-sidebar-accent"
+              onClick={onToggle}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -215,13 +219,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
 export function MobileHeader({ onToggle }: { onToggle: () => void }) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 h-14 bg-sidebar border-b border-sidebar-border flex items-center px-4 lg:hidden">
+    <header className="fixed top-0 left-0 right-0 z-30 h-14 bg-sidebar border-b border-sidebar-border flex items-center justify-between px-4 lg:hidden">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
           <TrendingUp className="w-4 h-4 text-primary" />
         </div>
         <span className="font-bold text-foreground">Forex Journal</span>
       </div>
+      <RiskWarningBell />
     </header>
   );
 }
