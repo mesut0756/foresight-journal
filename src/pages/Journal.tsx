@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { forexPairs } from "@/data/mockData";
-import { Edit2, Trash2, Search, Plus, CheckCircle2, Tag } from "lucide-react";
+import { Edit2, Trash2, Search, Plus, CheckCircle2, Tag, History } from "lucide-react";
 import { useTrades, Trade } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { EmptyState } from "@/components/EmptyState";
