@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { forexPairs } from "@/data/mockData";
-import { Edit2, Trash2, Search, Plus, CheckCircle2, Tag } from "lucide-react";
+import { Edit2, Trash2, Search, Plus, CheckCircle2, Tag, History } from "lucide-react";
 import { useTrades, Trade } from "@/hooks/useTrades";
 import { useStrategies } from "@/hooks/useStrategies";
 import { EmptyState } from "@/components/EmptyState";
@@ -142,12 +142,21 @@ export default function Journal() {
             <h1 className="text-3xl font-bold text-foreground">Trade Journal</h1>
             <p className="text-muted-foreground mt-1">Review and manage all your trades</p>
           </div>
-          <Link to="/add-trade">
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Trade
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/trade-replay">
+              <Button variant="outline">
+                <History className="w-4 h-4 mr-2" />
+                Trade Replay
+              </Button>
+            </Link>
+            <Link to="/add-trade">
+              <Button className="bg-primary hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Trade
+              </Button>
+            </Link>
+          </div>
+
         </div>
 
         {trades.length === 0 ? (

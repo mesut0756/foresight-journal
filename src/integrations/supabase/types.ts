@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_goals: {
+        Row: {
+          created_at: string
+          goal_date: string
+          id: string
+          max_loss: number
+          max_trades: number
+          mindset: string | null
+          mistakes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_date?: string
+          id?: string
+          max_loss?: number
+          max_trades?: number
+          mindset?: string | null
+          mistakes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal_date?: string
+          id?: string
+          max_loss?: number
+          max_trades?: number
+          mindset?: string | null
+          mistakes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pair_stats: {
         Row: {
           id: string
