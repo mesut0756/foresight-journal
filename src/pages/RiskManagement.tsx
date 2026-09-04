@@ -6,12 +6,16 @@ import { Label } from "@/components/ui/label";
 import { Shield, AlertTriangle, Check, Calculator, Edit2, Save } from "lucide-react";
 import { useRiskRules } from "@/hooks/useRiskRules";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useRiskWarning } from "@/hooks/useRiskWarning";
 import { toast } from "sonner";
 
 export default function RiskManagement() {
   const { riskRules, isLoading, updateRiskRules } = useRiskRules();
   const isUpdating = updateRiskRules.isPending;
   const { stats } = useDashboardStats();
+  const { balance, isLoading: balanceLoading, updateBalance } = useAccountBalance();
+  const { warnings } = useRiskWarning();
   
   const [isEditing, setIsEditing] = useState(false);
   const [maxRiskPerTrade, setMaxRiskPerTrade] = useState("2.0");
@@ -19,10 +23,15 @@ export default function RiskManagement() {
   const [maxWeeklyLoss, setMaxWeeklyLoss] = useState("10.0");
   
   // Calculator state
-  const [accountBalance, setAccountBalance] = useState("10000");
+  const [accountBalance, setAccountBalance] = useState("0");
   const [riskPercent, setRiskPercent] = useState("2.0");
   const [stopLossPips, setStopLossPips] = useState("50");
   const [calculatedRisk, setCalculatedRisk] = useState({ amount: 0, lotSize: 0 });
+
+  // Keep calculator balance in sync with the real account balance
+  useEffect(() => {
+    if (!balanceLoading) setAccountBalance(String(balance));
+  }, [balance, balanceLoading]);
 
   // Update local state when risk rules load
   useEffect(() => {
@@ -83,9 +92,7 @@ export default function RiskManagement() {
     );
   }
 
-  // Calculate current risk (mock calculation based on today's losses)
-  const currentDailyRisk = stats ? Math.abs(Math.min(0, stats.totalProfit)) / 10000 * 100 : 0;
-  const showWarning = riskRules && currentDailyRisk > (riskRules.max_daily_loss * 0.8);
+  const showWarning = warnings.length > 0;
 
   return (
     <DashboardLayout>
@@ -195,14 +202,27 @@ export default function RiskManagement() {
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="balance">Account Balance ($)</Label>
-                <Input
-                  id="balance"
-                  type="number"
-                  placeholder="10000"
-                  className="input-field font-mono"
-                  value={accountBalance}
-                  onChange={(e) => setAccountBalance(e.target.value)}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="balance"
+                    type="number"
+                    step="0.01"
+                    placeholder="0"
+                    className="input-field font-mono"
+                    value={accountBalance}
+                    onChange={(e) => setAccountBalance(e.target.value)}
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => updateBalance.mutate(parseFloat(accountBalance) || 0)}
+                    disabled={updateBalance.isPending || parseFloat(accountBalance) === balance}
+                  >
+                    {updateBalance.isPending ? "Saving..." : "Save"}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This is your real account balance and is used for the 80% daily/weekly loss warnings.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -238,10 +258,11 @@ export default function RiskManagement() {
               </div>
               <div>
                 <h4 className="font-semibold text-foreground">Risk Warning</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your current daily losses are approaching your maximum daily loss limit of {riskRules?.max_daily_loss}%. 
-                  Consider reducing position sizes or taking a break from trading.
-                </p>
+                <div className="text-sm text-muted-foreground mt-1 space-y-1">
+                  {warnings.map((w) => (
+                    <p key={w.type}>{w.message}</p>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
