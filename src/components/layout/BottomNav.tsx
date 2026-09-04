@@ -13,6 +13,8 @@ import {
   ArrowLeftRight,
   Newspaper,
   Zap,
+  Target,
+  History,
   X,
 } from "lucide-react";
 
@@ -24,6 +26,8 @@ const mainLinks = [
 ];
 
 const moreLinks = [
+  { to: "/daily-goals", label: "Goals", icon: Target },
+  { to: "/trade-replay", label: "Replay", icon: History },
   { to: "/signals", label: "Signals", icon: Zap },
   { to: "/news", label: "Calendar", icon: Newspaper },
   { to: "/transactions", label: "Funds", icon: ArrowLeftRight },

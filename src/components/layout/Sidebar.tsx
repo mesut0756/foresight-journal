@@ -11,6 +11,8 @@ import {
   ArrowLeftRight,
   Newspaper,
   Zap,
+  Target,
+  History,
   TrendingUp,
   X,
   LogOut,
@@ -25,6 +27,8 @@ const tradingLinks = [
   { to: "/add-trade", label: "Add Trade", icon: PlusCircle },
   { to: "/journal", label: "Journal", icon: BookOpen },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
+  { to: "/trade-replay", label: "Trade Replay", icon: History },
+  { to: "/daily-goals", label: "Daily Goals", icon: Target },
 ];
 
 const performanceLinks = [
