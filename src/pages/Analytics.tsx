@@ -21,20 +21,25 @@ export default function Analytics() {
   const { pairPerformance, monthlyPerformance, isLoading } = useDashboardStats();
   const { trades } = useTrades();
 
-  // Calculate win rate trend from trades - all 12 months
+  // Calculate win rate trend from trades - last 12 calendar months, year-scoped
+  // so months from different years are never merged together
   const calculateWinRateTrend = () => {
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlyData: Record<string, { wins: number; total: number }> = {};
-    
-    // Initialize all 12 months
-    monthNames.forEach(month => {
-      monthlyData[month] = { wins: 0, total: 0 };
-    });
-    
+    const now = new Date();
+    const months: { key: string; label: string }[] = [];
+
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
+      months.push({ key, label });
+      monthlyData[key] = { wins: 0, total: 0 };
+    }
+
     trades.forEach(trade => {
       const date = new Date(trade.created_at);
-      const monthKey = date.toLocaleString('default', { month: 'short' });
-      
+      const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+
       if (monthlyData[monthKey]) {
         monthlyData[monthKey].total++;
         if (trade.result === 'win') {
@@ -43,9 +48,9 @@ export default function Analytics() {
       }
     });
 
-    return monthNames.map(month => ({
-      month,
-      winRate: monthlyData[month].total > 0 ? Math.round((monthlyData[month].wins / monthlyData[month].total) * 100) : 0,
+    return months.map(({ key, label }) => ({
+      month: label,
+      winRate: monthlyData[key].total > 0 ? Math.round((monthlyData[key].wins / monthlyData[key].total) * 100) : 0,
     }));
   };
 
