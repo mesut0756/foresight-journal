@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/EmptyState";
-import { ChevronLeft, ChevronRight, History, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, ArrowUpRight, ArrowDownRight, Target, Brain, AlertTriangle } from "lucide-react";
+import { useDailyGoals } from "@/hooks/useDailyGoals";
 import { useTrades } from "@/hooks/useTrades";
 import {
   format,
@@ -24,6 +25,10 @@ export default function TradeReplay() {
   const { trades, isLoading } = useTrades();
   const [month, setMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
+
+  const { history: goals } = useDailyGoals(selectedDay ? format(selectedDay, "yyyy-MM-dd") : "");
+  const goalMap = useMemo(() => new Map(goals.map((g) => [g.goal_date, g])), [goals]);
+  const selectedGoal = selectedDay ? goalMap.get(format(selectedDay, "yyyy-MM-dd")) : undefined;
 
   const days = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
@@ -139,7 +144,10 @@ export default function TradeReplay() {
                         isSelected ? "border-primary" : "border-border/50"
                       } ${inMonth ? "" : "opacity-40"} hover:border-primary/60`}
                     >
-                      <div className="text-[11px] font-medium text-foreground">{format(day, "d")}</div>
+                      <div className="flex items-center justify-between text-[11px] font-medium text-foreground">
+                        {format(day, "d")}
+                        {goalMap.has(key) && <Target className="w-2.5 h-2.5 text-primary" aria-label="Daily goal set" />}
+                      </div>
                       {data && (
                         <div
                           className={`font-mono text-[9px] leading-tight ${
@@ -169,6 +177,33 @@ export default function TradeReplay() {
               <p className="text-sm text-muted-foreground mb-5">
                 {selectedTrades.length} trade{selectedTrades.length === 1 ? "" : "s"}
               </p>
+
+              {selectedGoal && (() => {
+                const dayLoss = Math.max(0, -selectedTrades.reduce((s, t) => s + (Number(t.profit_loss) || 0), 0));
+                const overTrades = selectedGoal.max_trades > 0 && selectedTrades.length > selectedGoal.max_trades;
+                const overLoss = Number(selectedGoal.max_loss) > 0 && dayLoss > Number(selectedGoal.max_loss);
+                return (
+                  <div className="mb-5 p-4 rounded-lg border border-primary/30 bg-primary/5 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                      <Target className="w-4 h-4 text-primary" /> Daily goal
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono">
+                      <span className={overTrades ? "text-destructive" : "text-muted-foreground"}>
+                        Trades {selectedTrades.length} / {selectedGoal.max_trades}
+                      </span>
+                      <span className={overLoss ? "text-destructive" : "text-muted-foreground"}>
+                        Loss {formatMoney(-dayLoss)} / {formatMoney(Number(selectedGoal.max_loss))}
+                      </span>
+                    </div>
+                    {selectedGoal.mindset && (
+                      <p className="text-sm text-muted-foreground flex gap-2"><Brain className="w-4 h-4 shrink-0 mt-0.5 text-primary" />{selectedGoal.mindset}</p>
+                    )}
+                    {selectedGoal.mistakes && (
+                      <p className="text-sm text-muted-foreground flex gap-2"><AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-destructive" />{selectedGoal.mistakes}</p>
+                    )}
+                  </div>
+                );
+              })()}
 
               {selectedTrades.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">No trades on this day.</p>

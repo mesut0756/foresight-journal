@@ -29,6 +29,7 @@ const moreLinks = [
   { to: "/daily-goals", label: "Goals", icon: Target },
   { to: "/trade-replay", label: "Replay", icon: History },
   { to: "/signals", label: "Signals", icon: Zap },
+  { to: "/signals/history", label: "Signal Log", icon: History },
   { to: "/news", label: "Calendar", icon: Newspaper },
   { to: "/transactions", label: "Funds", icon: ArrowLeftRight },
   { to: "/strategies", label: "Strategies", icon: Lightbulb },
