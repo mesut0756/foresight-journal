@@ -17,10 +17,14 @@ import {
   X,
   LogOut,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { RiskWarningBell } from "@/components/RiskWarningBell";
 import { toast } from "sonner";
+
+// Persists across Sidebar remounts (e.g. when a page navigation remounts
+// the layout) so the nav list doesn't visually jump back to the top.
+let sidebarNavScrollTop = 0;
 
 const tradingLinks = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -57,6 +61,15 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const navRef = useRef<HTMLElement | null>(null);
+
+  // Restore the nav's scroll position after (re)mount instead of letting it
+  // default to the top.
+  useEffect(() => {
+    if (navRef.current) {
+      navRef.current.scrollTop = sidebarNavScrollTop;
+    }
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -123,7 +136,6 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <RiskWarningBell />
             {/* Close button for mobile/tablet */}
             <Button 
               variant="ghost" 
@@ -137,7 +149,13 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-thin">
+        <nav
+          ref={navRef}
+          onScroll={(e) => {
+            sidebarNavScrollTop = e.currentTarget.scrollTop;
+          }}
+          className="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-thin"
+        >
           {/* Trading Section */}
           <div>
             <h2 className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -231,7 +249,6 @@ export function MobileHeader({ onToggle }: { onToggle: () => void }) {
         </div>
         <span className="font-bold text-foreground">Forex Journal</span>
       </div>
-      <RiskWarningBell />
     </header>
   );
 }
