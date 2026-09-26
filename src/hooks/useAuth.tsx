@@ -75,7 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
 
         if (profileError) {
-          return { error: profileError.message };
+          // The auth user was already created, but without a profile row the
+          // app can't function for them (balance lookups, etc). Sign them
+          // back out rather than leaving a half-created, broken session.
+          await supabase.auth.signOut();
+          return { error: `Account setup failed: ${profileError.message}. Please try signing up again.` };
         }
       }
 
