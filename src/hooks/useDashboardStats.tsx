@@ -176,24 +176,30 @@ export function useDashboardStats() {
       
       const monthMap = new Map<string, { profit: number; trades: number }>();
       
-      // Initialize all 12 months of the current year
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      monthNames.forEach(month => {
-        monthMap.set(month, { profit: 0, trades: 0 });
-      });
+      // Initialize the last 12 calendar months (year-scoped, so different
+      // years are never merged into the same bucket)
+      const now = new Date();
+      const monthKeys: { key: string; label: string }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = format(d, 'yyyy-MM');
+        monthKeys.push({ key, label: format(d, 'MMM yyyy') });
+        monthMap.set(key, { profit: 0, trades: 0 });
+      }
       
       trades.forEach(trade => {
-        const month = format(new Date(trade.created_at), 'MMM');
-        const existing = monthMap.get(month) || { profit: 0, trades: 0 };
-        existing.profit += Number(trade.profit_loss) || 0;
-        existing.trades++;
-        monthMap.set(month, existing);
+        const key = format(new Date(trade.created_at), 'yyyy-MM');
+        const existing = monthMap.get(key);
+        if (existing) {
+          existing.profit += Number(trade.profit_loss) || 0;
+          existing.trades++;
+        }
       });
       
-      return Array.from(monthMap.entries()).map(([month, stats]) => ({
-        month,
-        profit: stats.profit,
-        trades: stats.trades,
+      return monthKeys.map(({ key, label }) => ({
+        month: label,
+        profit: monthMap.get(key)!.profit,
+        trades: monthMap.get(key)!.trades,
       })) as MonthlyPerformance[];
     },
     enabled: !!user,
