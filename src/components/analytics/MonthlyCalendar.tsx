@@ -11,6 +11,15 @@ interface DayData {
   isCurrentMonth: boolean;
 }
 
+// Local (not UTC) yyyy-MM-dd key, so a trade is attributed to the calendar
+// day it actually happened on in the user's own timezone.
+function localDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 export function MonthlyCalendar() {
   const { trades } = useTrades();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -35,7 +44,7 @@ export function MonthlyCalendar() {
     
     trades.forEach(trade => {
       if (trade.profit_loss !== null && trade.result) {
-        const date = new Date(trade.created_at).toISOString().split('T')[0];
+        const date = localDateKey(new Date(trade.created_at));
         if (!pnlMap[date]) {
           pnlMap[date] = { pnl: 0, trades: 0 };
         }
@@ -64,7 +73,7 @@ export function MonthlyCalendar() {
     const prevMonthLastDay = new Date(year, month, 0).getDate();
     for (let i = startDay - 1; i >= 0; i--) {
       const date = new Date(year, month - 1, prevMonthLastDay - i);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = localDateKey(date);
       days.push({
         date,
         pnl: dailyPnL[dateKey]?.pnl || 0,
@@ -76,7 +85,7 @@ export function MonthlyCalendar() {
     // Current month days
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = localDateKey(date);
       days.push({
         date,
         pnl: dailyPnL[dateKey]?.pnl || 0,
@@ -89,7 +98,7 @@ export function MonthlyCalendar() {
     const remainingDays = 42 - days.length; // 6 rows * 7 days
     for (let day = 1; day <= remainingDays; day++) {
       const date = new Date(year, month + 1, day);
-      const dateKey = date.toISOString().split('T')[0];
+      const dateKey = localDateKey(date);
       days.push({
         date,
         pnl: dailyPnL[dateKey]?.pnl || 0,
