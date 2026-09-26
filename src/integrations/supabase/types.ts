@@ -10,10 +10,55 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
+      ai_signals: {
+        Row: {
+          analysis: string
+          created_at: string
+          direction: string
+          entry: string | null
+          id: string
+          pair: string | null
+          risk_reward: string | null
+          screenshot_path: string | null
+          stop_loss: string | null
+          take_profit: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analysis: string
+          created_at?: string
+          direction?: string
+          entry?: string | null
+          id?: string
+          pair?: string | null
+          risk_reward?: string | null
+          screenshot_path?: string | null
+          stop_loss?: string | null
+          take_profit?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analysis?: string
+          created_at?: string
+          direction?: string
+          entry?: string | null
+          id?: string
+          pair?: string | null
+          risk_reward?: string | null
+          screenshot_path?: string | null
+          stop_loss?: string | null
+          take_profit?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_goals: {
         Row: {
           created_at: string
