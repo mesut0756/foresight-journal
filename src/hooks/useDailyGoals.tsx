@@ -52,7 +52,7 @@ export function useDailyGoals(date: string) {
         .select('*')
         .eq('user_id', user.id)
         .order('goal_date', { ascending: false })
-        .limit(30);
+        .limit(366);
       if (error) throw error;
       return (data ?? []) as DailyGoal[];
     },
@@ -73,6 +73,7 @@ export function useDailyGoals(date: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['daily-goal'] });
       queryClient.invalidateQueries({ queryKey: ['daily-goals-history'] });
+      queryClient.invalidateQueries({ queryKey: ['risk-warning'] });
       toast.success('Daily plan saved');
     },
     onError: (error: Error) => toast.error(`Failed to save: ${error.message}`),

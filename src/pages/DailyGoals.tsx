@@ -8,6 +8,9 @@ import { Progress } from "@/components/ui/progress";
 import { Target, Brain, AlertTriangle, CalendarDays } from "lucide-react";
 import { useDailyGoals } from "@/hooks/useDailyGoals";
 import { useTrades } from "@/hooks/useTrades";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useRiskRules } from "@/hooks/useRiskRules";
+import { computeDailyLimit } from "@/hooks/useRiskWarning";
 import { format, parseISO, isSameDay } from "date-fns";
 
 const formatMoney = (v: number) =>
@@ -17,6 +20,8 @@ export default function DailyGoals() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const { goal, history, isLoading, saveGoal } = useDailyGoals(date);
   const { trades } = useTrades();
+  const { balance } = useAccountBalance();
+  const { riskRules } = useRiskRules();
 
   const [maxTrades, setMaxTrades] = useState("3");
   const [maxLoss, setMaxLoss] = useState("100");
@@ -39,7 +44,8 @@ export default function DailyGoals() {
   }, [trades, date]);
 
   const tradeLimit = parseFloat(maxTrades) || 0;
-  const lossLimit = parseFloat(maxLoss) || 0;
+  const ruleLimit = riskRules && balance > 0 ? (riskRules.max_daily_loss / 100) * balance : 0;
+  const lossLimit = computeDailyLimit(balance, riskRules?.max_daily_loss, parseFloat(maxLoss) || 0);
   const tradePct = tradeLimit > 0 ? Math.min(100, (dayStats.count / tradeLimit) * 100) : 0;
   const lossPct = lossLimit > 0 ? Math.min(100, (dayStats.loss / lossLimit) * 100) : 0;
 
@@ -89,7 +95,12 @@ export default function DailyGoals() {
           </div>
           <div className="bg-card rounded-xl border border-border p-6">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-sm text-muted-foreground">Loss used</span>
+              <div>
+                <span className="text-sm text-muted-foreground">Loss used</span>
+                <p className="text-[11px] text-muted-foreground font-mono">
+                  Balance {formatMoney(balance)}{ruleLimit > 0 && ` · Risk rule ${riskRules?.max_daily_loss}% = ${formatMoney(ruleLimit)}`}
+                </p>
+              </div>
               <span className={`font-mono font-semibold ${dayStats.pnl < 0 ? "text-destructive" : "text-primary"}`}>
                 {formatMoney(dayStats.pnl)} / {formatMoney(lossLimit)}
               </span>
@@ -97,7 +108,7 @@ export default function DailyGoals() {
             <Progress value={lossPct} className="h-2" />
             {lossLimit > 0 && lossPct >= 80 && (
               <p className="text-xs text-destructive mt-3">
-                You've used {Math.round(lossPct)}% of your max daily loss.
+                You've used {Math.round(lossPct)}% of your max daily loss ({formatMoney(lossLimit)}, the stricter of your goal and risk rule).
               </p>
             )}
           </div>
