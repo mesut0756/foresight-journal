@@ -115,11 +115,19 @@ export function TradeFormModal({
   };
 
   const handleCloseTrade = async () => {
-    if (!trade || !profitLoss || !result) return;
+    if (!trade || !result) return;
+    if (result !== "breakeven" && !profitLoss) return;
 
-    const pl = Math.abs(parseFloat(profitLoss));
+    const pl = result === "breakeven" ? 0 : Math.abs(parseFloat(profitLoss));
     const finalPl = result === "loss" ? -pl : pl;
-    const finalPips = pips ? (result === "loss" ? -Math.abs(parseFloat(pips)) : Math.abs(parseFloat(pips))) : null;
+    const finalPips =
+      result === "breakeven"
+        ? pips
+          ? 0
+          : null
+        : pips
+        ? (result === "loss" ? -Math.abs(parseFloat(pips)) : Math.abs(parseFloat(pips)))
+        : null;
 
     await onSave({
       id: trade.id,
@@ -366,7 +374,9 @@ export function TradeFormModal({
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="close-pl">Amount ($)</Label>
+                <Label htmlFor="close-pl">
+                  Amount ($){result === "breakeven" ? " (optional)" : ""}
+                </Label>
                 <Input
                   id="close-pl"
                   type="number"
@@ -382,7 +392,7 @@ export function TradeFormModal({
 
             <Button
               onClick={handleCloseTrade}
-              disabled={isLoading || !profitLoss || !result}
+              disabled={isLoading || !result || (result !== "breakeven" && !profitLoss)}
               className="w-full bg-primary hover:bg-primary/90"
             >
               {isLoading ? "Saving..." : trade?.result ? "Update Result" : "Close Trade"}
