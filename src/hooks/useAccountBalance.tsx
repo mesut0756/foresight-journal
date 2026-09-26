@@ -15,8 +15,10 @@ export function useAccountBalance() {
         .from('profiles')
         .select('account_balance')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      // No profile row (e.g. a signup that never finished creating one) -
+      // fall back to 0 instead of throwing and breaking the dashboard.
       return Number(data?.account_balance ?? 0);
     },
     enabled: !!user,
