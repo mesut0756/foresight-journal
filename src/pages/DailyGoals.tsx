@@ -191,7 +191,7 @@ export default function DailyGoals() {
               <h3 className="text-lg font-semibold text-foreground">Recent entries</h3>
             </div>
             <div className="space-y-3">
-              {history.map((h) => (
+              {history.slice(0, 30).map((h) => (
                 <button
                   key={h.id}
                   onClick={() => setDate(h.goal_date)}
