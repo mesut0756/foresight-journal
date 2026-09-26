@@ -39,6 +39,7 @@ const performanceLinks = [
 
 const marketLinks = [
   { to: "/signals", label: "AI Signals", icon: Zap },
+  { to: "/signals/history", label: "Signals History", icon: History },
   { to: "/news", label: "Economic Calendar", icon: Newspaper },
 ];
 

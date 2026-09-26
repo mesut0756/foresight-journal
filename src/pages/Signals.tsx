@@ -3,10 +3,12 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Upload, Zap, TrendingUp, TrendingDown, Minus, Loader2, ImageIcon, X, AlignLeft } from "lucide-react";
+import { Upload, Zap, TrendingUp, TrendingDown, Minus, Loader2, ImageIcon, X, AlignLeft, Save, History, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
+import { Link } from "react-router-dom";
+import { useSignals } from "@/hooks/useSignals";
 
 const forexPairs = [
   "EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD",
@@ -24,6 +26,8 @@ export default function Signals() {
   const [isBriefing, setIsBriefing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { save } = useSignals();
+  const [saved, setSaved] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -71,6 +75,7 @@ export default function Signals() {
       if (data?.error) throw new Error(data.error);
 
       setAnalysis(data.analysis);
+      setSaved(false);
     } catch (err: any) {
       toast.error(err.message || "Analysis failed. Please try again.");
     } finally {
@@ -138,7 +143,10 @@ export default function Signals() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">AI Trade Signals</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-2xl font-bold text-foreground">AI Trade Signals</h1>
+            <Button asChild variant="outline" size="sm"><Link to="/signals/history"><History className="w-4 h-4 mr-1.5" /> History</Link></Button>
+          </div>
           <p className="text-muted-foreground mt-1">
             Upload a chart screenshot and let AI analyze the setup, market structure, and upcoming news.
           </p>
@@ -236,10 +244,19 @@ export default function Signals() {
                     <CardTitle>Analysis Result</CardTitle>
                     {getSignalBadge()}
                   </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    onClick={() => save.mutate({ analysis, pair: selectedPair, imageDataUrl: imageBase64 }, { onSuccess: () => setSaved(true) })}
+                    disabled={save.isPending || saved}
+                  >
+                    {save.isPending ? <Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> : saved ? <Check className="w-3 h-3 mr-1.5" /> : <Save className="w-3 h-3 mr-1.5" />}
+                    {saved ? "Saved" : "Save signal"}
+                  </Button>
                   <Button
                     variant={showBrief ? "default" : "outline"}
                     size="sm"
-                    className="w-fit mt-2"
+                    className="w-fit"
                     onClick={handleMakeBrief}
                     disabled={isBriefing}
                   >
@@ -249,6 +266,7 @@ export default function Signals() {
                       <><AlignLeft className="w-3 h-3 mr-1.5" /> {showBrief ? "Show full analysis" : "Make it brief"}</>
                     )}
                   </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="prose prose-sm dark:prose-invert max-w-none max-h-[500px] overflow-y-auto pr-2">
